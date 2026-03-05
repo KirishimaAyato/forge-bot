@@ -882,6 +882,21 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   border-radius:var(--r8);padding:8px 11px;
   font-size:11px;color:var(--emerald2);line-height:1.55;
 }
+
+.bh-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:var(--glass);
+  border:1px solid var(--rim);border-radius:var(--r12);
+  margin-bottom:8px;
+}
+.bh-date{font-size:11px;color:var(--t3);flex-shrink:0;width:68px;}
+.bh-vals{flex:1;}
+.bh-weight{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#fff;}
+.bh-fat{font-size:11px;color:var(--t3);margin-top:1px;}
+.bh-delta{font-size:12px;font-weight:700;flex-shrink:0;}
+.bh-del{width:26px;height:26px;border-radius:50%;background:rgba(244,63,94,.1);
+  border:1px solid rgba(244,63,94,.2);color:var(--rose2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -991,12 +1006,15 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <!-- Smart recommendation -->
   <!-- Body stats card -->
   <div class="body-card section-gap" id="bodyStatsCard">
-    <div class="body-card-title">🎯 Твои параметры</div>
+    <div class="body-card-title" style="justify-content:space-between;">
+      <span>🎯 Твои параметры</span>
+      <span onclick="openBodyEdit()" style="font-size:11px;font-weight:600;color:var(--v3);cursor:pointer;padding:4px 10px;background:rgba(124,108,255,.12);border-radius:var(--rpill);border:1px solid rgba(124,108,255,.2);">Изменить</span>
+    </div>
     <div class="body-stats-grid">
-      <div class="bst"><span class="bst-val">79.8</span><span class="bst-lbl">Вес (кг)</span></div>
-      <div class="bst"><span class="bst-val">~19%</span><span class="bst-lbl">Жир</span></div>
-      <div class="bst"><span class="bst-val">−3 кг</span><span class="bst-lbl">За месяц</span></div>
-      <div class="bst"><span class="bst-val">23.3</span><span class="bst-lbl">ИМТ</span></div>
+      <div class="bst"><span class="bst-val" id="bstWeight">—</span><span class="bst-lbl">Вес (кг)</span></div>
+      <div class="bst"><span class="bst-val" id="bstFat">—</span><span class="bst-lbl">Жир %</span></div>
+      <div class="bst"><span class="bst-val" id="bstBMI">—</span><span class="bst-lbl">ИМТ</span></div>
+      <div class="bst"><span class="bst-val" id="bstChange">—</span><span class="bst-lbl">Изм. веса</span></div>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <div style="flex:1;padding:8px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:var(--r8);text-align:center;">
@@ -1215,7 +1233,6 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
     <div class="cl-item"><div class="cl-dot" style="background:#f472b6"></div>Йога</div>
     <div class="cl-item"><div class="cl-dot" style="background:var(--emerald2)"></div>Дорожка</div>
     <div class="cl-item"><div class="cl-dot" style="background:var(--orange2)"></div>Упр. дома</div>
-    <div class="cl-item"><div class="cl-dot" style="background:var(--gold2)"></div>Несколько</div>
     <div class="cl-item"><div class="cl-dot" style="background:var(--rim2)"></div>Отдых</div>
   </div>
 
@@ -1260,6 +1277,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
     <div class="ex-tab" onclick="filterEx('core',this)">Пресс</div>
     <div class="ex-tab" onclick="filterEx('yoga',this)">Йога</div>
     <div class="ex-tab" onclick="filterEx('cardio',this)">Кардио</div>
+    <div class="ex-tab" onclick="filterEx('dumbbell',this)">🏋️ Гантель 5кг</div>
   </div>
 
   <div id="exList"></div>
@@ -1299,7 +1317,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 const DEF = {
   name:'Воин', level:1, xp:0, xpToNext:200,
   yoga:0, walk:0, home:0, total:0,
-  streak:0, lastDate:'',
+  streak:0, lastDate:'', bodyLog:[],
   history:[], prs:{}, unlockedAchs:[],
   waterLog:[], waterDate:'', goals:{weight:'both'}
 };
@@ -2086,6 +2104,170 @@ function pad(n){return n<10?'0'+n:String(n);}
 function dateFromStr(s){const[dd,mm,yy]=s.split('.');return new Date(parseInt(yy),parseInt(mm)-1,parseInt(dd));}
 
 /* ═══════════════════════════════════════
+   RECALCULATE STREAK FROM HISTORY
+═══════════════════════════════════════ */
+function recalcStreak(){
+  // Build set of unique active days
+  const activeDays = new Set(S.history.map(h=>h.date));
+  if(activeDays.size===0){S.streak=0;S.lastDate='';return;}
+  // Walk backwards from today counting consecutive days
+  let streak=0;
+  const td=todayStr();
+  for(let i=0;;i++){
+    const d=dayOff(-i);
+    if(activeDays.has(d)){
+      streak++;
+      if(i===0||i>0) continue;
+    } else {
+      // Allow gap only if we haven't started counting yet (today has no workout)
+      if(streak===0 && i===0) continue;
+      break;
+    }
+  }
+  // Simpler: find longest streak ending today or yesterday
+  const sorted=[...activeDays].sort();
+  let best=0,cur=0,prev=null;
+  for(const d of sorted){
+    if(prev){
+      const[pd,pm,py]=prev.split('.').map(Number);
+      const[cd,cm,cy]=d.split('.').map(Number);
+      const prevDate=new Date(py,pm-1,pd);
+      const curDate=new Date(cy,cm-1,cd);
+      const diff=(curDate-prevDate)/864e5;
+      cur = diff===1 ? cur+1 : 1;
+    } else {
+      cur=1;
+    }
+    best=Math.max(best,cur);
+    prev=d;
+  }
+  // Current streak = streak ending at last active day
+  const lastActive=sorted[sorted.length-1];
+  const td2=todayStr(),yd=dayOff(-1);
+  if(lastActive===td2||lastActive===yd){
+    // Count backwards from lastActive
+    let s=0;
+    for(let i=0;;i++){
+      const[ld,lm,ly]=lastActive.split('.').map(Number);
+      const base=new Date(ly,lm-1,ld);
+      base.setDate(base.getDate()-i);
+      const ds=pad(base.getDate())+'.'+pad(base.getMonth()+1)+'.'+base.getFullYear();
+      if(activeDays.has(ds)) s++;
+      else break;
+    }
+    S.streak=s;
+  } else {
+    S.streak=0;
+  }
+  S.lastDate=lastActive;
+}
+
+/* ═══════════════════════════════════════
+   BODY PARAMS TRACKING
+═══════════════════════════════════════ */
+// bodyLog stored in S.bodyLog: [{date, weight, fat, note}]
+
+function openBodyEdit(){
+  // Pre-fill with latest values
+  const last = S.bodyLog && S.bodyLog.length ? S.bodyLog[S.bodyLog.length-1] : null;
+  document.getElementById('beWeight').value = last ? last.weight : '';
+  document.getElementById('beFat').value = last ? last.fat : '';
+  document.getElementById('beNote').value = '';
+  renderBodyHistory();
+  document.getElementById('bodyEditModal').classList.add('open');
+}
+
+function closeBodyEdit(e){
+  if(e && e.target !== document.getElementById('bodyEditModal')) return;
+  document.getElementById('bodyEditModal').classList.remove('open');
+}
+
+function saveBodyParams(){
+  const w = parseFloat(document.getElementById('beWeight').value);
+  const f = parseFloat(document.getElementById('beFat').value);
+  if(isNaN(w) && isNaN(f)) return;
+  if(!S.bodyLog) S.bodyLog = [];
+  const entry = {
+    date: todayStr(),
+    weight: isNaN(w) ? null : w,
+    fat: isNaN(f) ? null : f,
+    note: document.getElementById('beNote').value.trim()
+  };
+  // Replace today's entry if already exists
+  const todayIdx = S.bodyLog.findIndex(e=>e.date===todayStr());
+  if(todayIdx>=0) S.bodyLog[todayIdx] = entry;
+  else S.bodyLog.push(entry);
+  save();
+  renderBodyCard();
+  renderBodyHistory();
+  document.getElementById('beNote').value='';
+  // Flash confirmation
+  const btn=document.querySelector('#bodyEditModal .btn-primary');
+  btn.textContent='✅ Сохранено!';
+  setTimeout(()=>btn.textContent='💾 Сохранить',1500);
+}
+
+function deleteBodyEntry(idx){
+  S.bodyLog.splice(idx,1);
+  save();
+  renderBodyCard();
+  renderBodyHistory();
+}
+
+function renderBodyHistory(){
+  const log = (S.bodyLog||[]).slice().reverse();
+  const el = document.getElementById('bodyHistory');
+  if(!log.length){el.innerHTML='<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px;">Нет записей</div>';return;}
+  el.innerHTML = log.map((e,i)=>{
+    const realIdx = (S.bodyLog.length-1) - i;
+    // Calculate delta vs previous entry
+    const prevEntry = realIdx > 0 ? S.bodyLog[realIdx-1] : null;
+    let deltaHtml = '';
+    if(prevEntry && e.weight && prevEntry.weight){
+      const d = (e.weight - prevEntry.weight).toFixed(1);
+      const col = d<0 ? 'var(--emerald2)' : d>0 ? 'var(--rose2)' : 'var(--t3)';
+      const sign = d>0?'+':'';
+      deltaHtml = `<span class="bh-delta" style="color:${col}">${sign}${d}</span>`;
+    }
+    return `<div class="bh-item">
+      <span class="bh-date">${e.date}</span>
+      <div class="bh-vals">
+        <div class="bh-weight">${e.weight ? e.weight+' кг' : '—'}</div>
+        <div class="bh-fat">${e.fat ? e.fat+'% жира' : ''}${e.note?' · '+e.note:''}</div>
+      </div>
+      ${deltaHtml}
+      <div class="bh-del" onclick="deleteBodyEntry(${realIdx})">✕</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBodyCard(){
+  if(!S.bodyLog || !S.bodyLog.length) return;
+  const last = S.bodyLog[S.bodyLog.length-1];
+  const first = S.bodyLog[0];
+  // Weight
+  const wEl = document.getElementById('bstWeight');
+  if(wEl && last.weight) wEl.textContent = last.weight;
+  // Fat
+  const fEl = document.getElementById('bstFat');
+  if(fEl && last.fat) fEl.textContent = last.fat+'%';
+  // BMI = weight / (height_m)^2 — height 185cm
+  const bmiEl = document.getElementById('bstBMI');
+  if(bmiEl && last.weight){
+    const bmi = (last.weight / (1.85*1.85)).toFixed(1);
+    bmiEl.textContent = bmi;
+  }
+  // Change vs first entry
+  const chEl = document.getElementById('bstChange');
+  if(chEl && last.weight && first.weight && last !== first){
+    const d = (last.weight - first.weight).toFixed(1);
+    const sign = d>0?'+':'';
+    chEl.textContent = sign+d+' кг';
+    chEl.style.color = d<0 ? 'var(--emerald2)' : d>0 ? 'var(--rose2)' : '';
+  }
+}
+
+/* ═══════════════════════════════════════
    DAY EDIT MODAL
 ═══════════════════════════════════════ */
 let editingDate_ = null;
@@ -2144,7 +2326,7 @@ function deleteDayWorkout(idx) {
   S.total = Math.max(0, S.total - 1);
   S.xp = Math.max(0, S.xp - h.xp);
   S.history.splice(idx, 1);
-  checkAchs(); save(); renderHome();
+  recalcStreak(); checkAchs(); save(); renderHome();
   if(editingDate_) renderDayWorkouts(editingDate_);
   renderCal();
 }
@@ -2186,6 +2368,7 @@ function addWorkoutForDay() {
   S.total++;
   S[dayWT_]++;
   addXP(xp);
+  recalcStreak();
   checkAchs(); save();
   dayWT_ = null;
   dayDur_ = 30;
@@ -2251,7 +2434,7 @@ const EXERCISES = [
    sets:'3–4 подхода × 15–20 повт',
    how:'Ноги чуть шире плеч, носки слегка в стороны. Опускайся как на стул — бёдра параллельны полу. Колени над носками, спина прямая.',
    tip:'Пята не должна отрываться. Если отрывается — работай над гибкостью голеностопа.'},
-  {id:'lunge',group:'legs',icon:'🚶',name:'Выпады с гантелями',muscles:'Квадрицепс, ягодицы, стабилизаторы',diff:'med',
+  {id:'lunge',group:'dumbbell',icon:'🚶',name:'Выпады с гантелями',muscles:'Квадрицепс, ягодицы, стабилизаторы',diff:'med',
    sets:'3 подхода × 10 повт каждой ногой',
    how:'Шаг вперёд, опусти заднее колено почти до пола. Переднее колено над щиколоткой. Оттолкнись пяткой, вернись назад.',
    tip:'Держи корпус вертикально — не наклоняйся вперёд. Гантели в руках увеличат нагрузку.'},
@@ -2315,6 +2498,60 @@ const EXERCISES = [
    sets:'4 × 20 повт каждой ногой',
    how:'Из планки поочерёдно тяни колени к груди в быстром темпе. Таз не поднимать.',
    tip:'Высокоинтенсивное упражнение — отлично для жиросжигания в коротких тренировках.'},
+
+  // ── DUMBBELL 5KG ──
+  {id:'db_lateral',group:'dumbbell',icon:'↔️',name:'Разведение в стороны',muscles:'Средняя дельта, плечи',diff:'easy',
+   sets:'3 × 15 повт',
+   how:'Стоя, гантели по бокам. Поднимай руки в стороны до уровня плеч — не выше. Лёгкий изгиб в локтях. Медленно опускай.',
+   tip:'5 кг — идеальный вес для боковых разведений. Не читингуй корпусом — это убивает нагрузку на дельту.'},
+  {id:'db_front',group:'dumbbell',icon:'⬆️',name:'Подъём гантели перед собой',muscles:'Передняя дельта',diff:'easy',
+   sets:'3 × 12 повт каждой рукой',
+   how:'По очереди поднимай руку прямо перед собой до уровня плеч. Ладонь смотрит вниз. Контролируй опускание.',
+   tip:'Хорошо дополняет разведения — вместе прокачивают всю дельту. Делай в суперсете.'},
+  {id:'db_shrug',group:'dumbbell',icon:'🤷',name:'Шраги с гантелью',muscles:'Трапеция, шея',diff:'easy',
+   sets:'3 × 20 повт',
+   how:'Гантель в одной руке, подними плечо максимально вверх — как бы говоришь «не знаю». Медленно опускай.',
+   tip:'Трапеция важна для осанки — особенно при сидячей работе. Делай обеими руками поочерёдно.'},
+  {id:'db_bent_raise',group:'dumbbell',icon:'🦅',name:'Разведение в наклоне',muscles:'Задняя дельта, ромбовидные',diff:'med',
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантели свисают вниз. Разводи руки в стороны — как крылья. Лопатки сводятся в верхней точке.',
+   tip:'Исправляет сутулость лучше многих упражнений. Очень важно для учителя с сидячей работой.'},
+  {id:'db_goblet',group:'dumbbell',icon:'🏆',name:'Гоблет-приседание',muscles:'Квадрицепс, ягодицы, кор',diff:'easy',
+   sets:'3 × 15 повт',
+   how:'Держи гантель вертикально двумя руками у груди. Приседай глубоко, локти между коленями в нижней точке.',
+   tip:'Гантель у груди автоматически выпрямляет спину. Лучший вариант приседа без тренажёра.'},
+  {id:'db_rdl',group:'dumbbell',icon:'🦿',name:'Румынская тяга',muscles:'Бицепс бедра, ягодицы, нижняя спина',diff:'med',
+   sets:'3 × 12 повт',
+   how:'Гантель в одной руке. Наклон вперёд с прямой спиной — гантель вдоль ноги. Чувствуй растяжение бицепса бедра. Встань через таз.',
+   tip:'Одна из лучших связок упражнений для задней поверхности бедра. 5 кг достаточно для изучения техники.'},
+  {id:'db_press',group:'dumbbell',icon:'🏋️',name:'Жим лёжа с гантелью',muscles:'Грудь, трицепс, передняя дельта',diff:'easy',
+   sets:'3 × 15 повт',
+   how:'Лёжа на полу или скамье. Гантели на уровне груди, локти 45°. Жим вверх до выпрямления рук, опусти медленно.',
+   tip:'На полу — более безопасно и нагружает нижнюю часть грудных. Хорошая альтернатива штанге.'},
+  {id:'db_fly',group:'dumbbell',icon:'🦋',name:'Разводка лёжа',muscles:'Внутренняя и средняя грудь',diff:'med',
+   sets:'3 × 12 повт',
+   how:'Лёжа, гантели над грудью прямыми руками. Разводи широкой дугой — как обнимаешь дерево. Лёгкий изгиб в локтях.',
+   tip:'Растягивает грудные мышцы в полной амплитуде. Делай после жима — лучше прочувствуешь работу груди.'},
+  {id:'db_row_both',group:'dumbbell',icon:'⚓',name:'Тяга к поясу стоя',muscles:'Широчайшие, бицепс, задняя дельта',diff:'easy',
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантель в двух руках. Тяни к животу — локти назад и вверх. Лопатки сводятся.',
+   tip:'5 кг позволяет сосредоточиться на технике. Почувствуй как работают лопатки — это важнее веса.'},
+  {id:'db_curl_conc',group:'dumbbell',icon:'💡',name:'Концентрированное сгибание',muscles:'Пик бицепса',diff:'easy',
+   sets:'3 × 10 повт каждой рукой',
+   how:'Сидя, локоть упирается в колено. Медленно сгибай и разгибай. Полная амплитуда, пауза вверху 2 сек.',
+   tip:'Изолирует бицепс лучше всех упражнений. Медленный темп с 5 кг даёт больше роста, чем быстрый с 10.'},
+  {id:'db_kickback',group:'dumbbell',icon:'🦵',name:'Отведение гантели назад',muscles:'Трицепс (длинная головка)',diff:'easy',
+   sets:'3 × 12 повт каждой рукой',
+   how:'Наклон, рука согнута у корпуса. Разгибай назад до полного выпрямления. Локоть неподвижен.',
+   tip:'Чувствуешь жжение? Хорошо. Именно такое жжение говорит что трицепс работает правильно.'},
+  {id:'db_oblique_bend',group:'dumbbell',icon:'〽️',name:'Наклоны в стороны с гантелью',muscles:'Косые мышцы пресса, боковые',diff:'easy',
+   sets:'3 × 15 повт каждую сторону',
+   how:'Гантель в одной руке. Наклоняйся вбок — гантель скользит вдоль бедра вниз. Без поворота корпуса.',
+   tip:'Укрепляет боковые мышцы кора. Не используй инерцию — движение должно быть медленным.'},
+  {id:'db_lunge_walk',group:'dumbbell',icon:'🚶',name:'Ходящие выпады',muscles:'Квадрицепс, ягодицы, равновесие',diff:'med',
+   sets:'3 × 10 шагов каждой ногой',
+   how:'Гантель в каждой руке (или одна для начала). Шагай выпадами вперёд — чередуй ноги. Сохраняй вертикальный корпус.',
+   tip:'Лучше обычных выпадов для баланса и координации. Начни без гантели, потом добавляй.'},
 ];
 
 let exFilter_ = 'all';
@@ -2406,12 +2643,19 @@ function checkWaterWarning(total) {
 ═══════════════════════════════════════ */
 // Init: load data then render
 (async()=>{
-  // Tell Telegram to expand the WebApp to full screen
   if(window.Telegram && window.Telegram.WebApp){
     window.Telegram.WebApp.expand();
     window.Telegram.WebApp.ready();
   }
   await load();
+  // Seed initial body data if empty
+  if(!S.bodyLog || S.bodyLog.length===0){
+    S.bodyLog=[
+      {date:'01.02.2026',weight:82.8,fat:21,note:'Начало'},
+      {date:'03.03.2026',weight:79.8,fat:20.4,note:'Текущий'}
+    ];
+    save();
+  }
   renderHome();
   checkAchs();
 })();
@@ -2446,6 +2690,36 @@ function checkWaterWarning(total) {
       <textarea class="inp" id="dayNotes" placeholder="Заметки..." style="margin-bottom:12px;height:60px;"></textarea>
       <button class="btn-primary" onclick="addWorkoutForDay()">Добавить за этот день</button>
     </div>
+  </div>
+</div>
+
+
+<!-- ══════ BODY PARAMS EDIT MODAL ══════ -->
+<div class="day-modal-overlay" id="bodyEditModal" onclick="closeBodyEdit(event)">
+  <div class="day-modal-sheet">
+    <div class="day-modal-handle"></div>
+    <div class="day-modal-title">📊 Обновить параметры</div>
+    <div class="day-modal-sub">История сохраняется автоматически</div>
+
+    <div style="display:flex;gap:10px;margin-bottom:12px;">
+      <div style="flex:1">
+        <div class="label" style="margin-bottom:6px;">Вес (кг)</div>
+        <input class="inp" type="number" id="beWeight" step="0.1" placeholder="79.8" style="text-align:center;font-size:20px;font-weight:700;">
+      </div>
+      <div style="flex:1">
+        <div class="label" style="margin-bottom:6px;">Жир (%)</div>
+        <input class="inp" type="number" id="beFat" step="0.1" placeholder="20.4" style="text-align:center;font-size:20px;font-weight:700;">
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div class="label" style="margin-bottom:6px;">Заметка (необязательно)</div>
+      <input class="inp" type="text" id="beNote" placeholder="Напр: после болезни, после отпуска...">
+    </div>
+    <button class="btn-primary" onclick="saveBodyParams()">💾 Сохранить</button>
+
+    <!-- History -->
+    <div class="label" style="margin-top:20px;margin-bottom:10px;">История изменений</div>
+    <div id="bodyHistory" style="max-height:220px;overflow-y:auto;"></div>
   </div>
 </div>
 
