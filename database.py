@@ -46,6 +46,7 @@ class Database:
                     last_date TEXT DEFAULT '',
                     prs TEXT DEFAULT '{}',
                     unlocked_achs TEXT DEFAULT '[]',
+                    body_log TEXT DEFAULT '[]',
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
@@ -77,6 +78,11 @@ class Database:
                     FOREIGN KEY (user_id) REFERENCES users(user_id)
                 )
             """)
+            # Migration: add body_log column if upgrading from older version
+            try:
+                await db.execute("ALTER TABLE users ADD COLUMN body_log TEXT DEFAULT '[]'")
+            except Exception:
+                pass  # Column already exists
             await db.commit()
 
     async def ensure_user(self, user_id: int, username: str):
@@ -101,6 +107,7 @@ class Database:
                 d["xp_to_next"] = get_xp_to_next(d["level"])
                 d["prs"] = json.loads(d["prs"])
                 d["unlocked_achs"] = json.loads(d["unlocked_achs"])
+                d["body_log"] = json.loads(d.get("body_log") or "[]")
                 return d
 
     async def save_user_data(self, user_id: int, data: dict):
@@ -121,7 +128,8 @@ class Database:
                     streak = ?,
                     last_date = ?,
                     prs = ?,
-                    unlocked_achs = ?
+                    unlocked_achs = ?,
+                    body_log = ?
                 WHERE user_id = ?
             """, (
                 s.get("name", "Воин"),
@@ -135,6 +143,7 @@ class Database:
                 s.get("lastDate", ""),
                 json.dumps(s.get("prs", {})),
                 json.dumps(ua),
+                json.dumps(s.get("bodyLog", [])),
                 user_id
             ))
 
@@ -233,6 +242,7 @@ class Database:
             "waterLog": water_log,
             "waterDate": today,
             "unlockedAchs": user["unlocked_achs"],
+            "bodyLog": user["body_log"],
         }
 
     async def get_today_water(self, user_id: int) -> int:
