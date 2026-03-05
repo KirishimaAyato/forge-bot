@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <script>if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.expand();window.Telegram.WebApp.ready();}</script>
 <title>FORGE — Your Body, Your Quest</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -152,7 +152,7 @@ body{
   width:100%;background:var(--glass);
   border:1.5px solid var(--rim);border-radius:var(--r12);
   color:var(--t1);font-family:'Outfit',sans-serif;
-  font-size:15px;font-weight:400;
+  font-size:16px;font-weight:400;
   padding:13px 16px;outline:none;
   transition:border-color .2s,box-shadow .2s;
   -webkit-appearance:none;
@@ -1681,10 +1681,14 @@ function epOpen(ei) {
   el.innerHTML = epBuildList(ei, '');
   el.style.display = 'block';
   epAttach(ei);
-  // Scroll so the exercise field is visible
-  var dur = document.getElementById('durLabel');
-  if (dur) dur.scrollIntoView({behavior:'smooth', block:'nearest'});
-  // DO NOT focus search — user taps it manually to avoid unwanted keyboard
+  // Scroll so bottom of "Силовые тренировки" card + 20px is at top of viewport
+  var homeBtn = document.getElementById('wt-home');
+  if (homeBtn) {
+    var rect = homeBtn.getBoundingClientRect();
+    var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    var target = scrollTop + rect.bottom + 20;
+    window.scrollTo({top: target, behavior: 'smooth'});
+  }
 }
 
 
