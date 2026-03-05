@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script>if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.expand();window.Telegram.WebApp.ready();}</script>
 <title>FORGE — Your Body, Your Quest</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -809,6 +810,78 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 .day-dur-unit{font-size:12px;color:var(--t3);font-family:'Outfit',sans-serif;}
 .cal-day.clickable{cursor:pointer;}
 .cal-day.clickable:active{transform:scale(.9);opacity:.8;}
+
+/* ════════════════════════════════════════
+   ██  PROFILE / BODY STATS
+════════════════════════════════════════ */
+.body-card{
+  padding:18px;margin-bottom:14px;
+  background:linear-gradient(135deg,rgba(124,108,255,.1),rgba(167,139,250,.06));
+  border:1px solid rgba(124,108,255,.18);border-radius:var(--r20);
+}
+.body-card-title{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--v3);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.body-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.bst{padding:12px;background:var(--glass);border:1px solid var(--rim);border-radius:var(--r12);text-align:center;}
+.bst-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:#fff;display:block;}
+.bst-lbl{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;display:block;}
+.body-tip{font-size:12px;color:var(--t2);line-height:1.65;padding:10px 12px;background:rgba(124,108,255,.07);border-radius:var(--r8);border-left:2px solid var(--v2);}
+.water-warning{
+  display:none;align-items:center;gap:10px;
+  background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);
+  border-radius:var(--r12);padding:12px 14px;margin-bottom:12px;
+  animation:fadeSlide .3s ease;
+}
+.water-warning.show{display:flex;}
+.ww-icon{font-size:22px;flex-shrink:0;}
+.ww-text{font-size:12px;color:var(--gold2);line-height:1.5;font-weight:500;}
+
+/* ════════════════════════════════════════
+   ██  EXERCISES LIBRARY
+════════════════════════════════════════ */
+.ex-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.ex-tabs::-webkit-scrollbar{display:none;}
+.ex-tab{
+  flex-shrink:0;padding:7px 14px;
+  background:var(--glass);border:1.5px solid var(--rim);
+  border-radius:var(--rpill);font-size:12px;font-weight:600;
+  color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.ex-tab.active{border-color:var(--v2);background:rgba(124,108,255,.12);color:var(--v3);}
+.ex-card{
+  background:var(--glass);border:1px solid var(--rim);
+  border-radius:var(--r16);margin-bottom:10px;overflow:hidden;
+  transition:all .25s;
+}
+.ex-card-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;cursor:pointer;
+}
+.ex-card-header:active{opacity:.8;}
+.ex-icon{font-size:26px;flex-shrink:0;}
+.ex-info{flex:1;min-width:0;}
+.ex-name{font-size:14px;font-weight:700;color:var(--t1);}
+.ex-muscles{font-size:11px;color:var(--t3);margin-top:2px;}
+.ex-diff{
+  padding:3px 9px;border-radius:var(--rpill);
+  font-size:10px;font-weight:700;letter-spacing:.3px;flex-shrink:0;
+}
+.ex-diff.easy{background:rgba(16,185,129,.12);color:var(--emerald2);border:1px solid rgba(16,185,129,.2);}
+.ex-diff.med{background:rgba(245,158,11,.12);color:var(--gold2);border:1px solid rgba(245,158,11,.2);}
+.ex-diff.hard{background:rgba(244,63,94,.12);color:var(--rose2);border:1px solid rgba(244,63,94,.2);}
+.ex-chevron{font-size:12px;color:var(--t3);flex-shrink:0;transition:transform .25s;}
+.ex-card.open .ex-chevron{transform:rotate(180deg);}
+.ex-details{
+  display:none;padding:0 16px 14px;
+  border-top:1px solid var(--rim);
+}
+.ex-card.open .ex-details{display:block;}
+.ex-sets{font-size:12px;font-weight:700;color:var(--v3);margin-bottom:6px;padding-top:12px;}
+.ex-how{font-size:12px;color:var(--t2);line-height:1.7;margin-bottom:10px;}
+.ex-tip-box{
+  background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.15);
+  border-radius:var(--r8);padding:8px 11px;
+  font-size:11px;color:var(--emerald2);line-height:1.55;
+}
 </style>
 </head>
 <body>
@@ -916,6 +989,32 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   </div>
 
   <!-- Smart recommendation -->
+  <!-- Body stats card -->
+  <div class="body-card section-gap" id="bodyStatsCard">
+    <div class="body-card-title">🎯 Твои параметры</div>
+    <div class="body-stats-grid">
+      <div class="bst"><span class="bst-val">79.8</span><span class="bst-lbl">Вес (кг)</span></div>
+      <div class="bst"><span class="bst-val">~19%</span><span class="bst-lbl">Жир</span></div>
+      <div class="bst"><span class="bst-val">−3 кг</span><span class="bst-lbl">За месяц</span></div>
+      <div class="bst"><span class="bst-val">23.3</span><span class="bst-lbl">ИМТ</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <div style="flex:1;padding:8px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15);border-radius:var(--r8);text-align:center;">
+        <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Цель калорий</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--emerald2);margin-top:2px;">1800–2100</div>
+      </div>
+      <div style="flex:1;padding:8px 10px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.15);border-radius:var(--r8);text-align:center;">
+        <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Белок/день</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--orange2);margin-top:2px;">150–165 г</div>
+      </div>
+      <div style="flex:1;padding:8px 10px;background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.15);border-radius:var(--r8);text-align:center;">
+        <div style="font-size:10px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Вода/день</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--sky2);margin-top:2px;">2–2.5 л</div>
+      </div>
+    </div>
+    <div class="body-tip" id="bodyDailyTip">Загрузка совета...</div>
+  </div>
+
   <div class="rec-card section-gap" id="homeRec"></div>
 
   <!-- Recent workouts -->
@@ -1061,6 +1160,11 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   </div>
 
   <!-- Quick add -->
+  <div class="water-warning" id="waterWarning">
+    <span class="ww-icon">⚠️</span>
+    <div class="ww-text" id="waterWarningText">Ты выпил достаточно воды на сегодня. Больше — не значит лучше.</div>
+  </div>
+
   <div class="label">Быстро добавить</div>
   <div class="water-quick section-gap">
     <div class="wq-btn" onclick="addWater(250)"><span class="wq-icon">☕</span><span class="wq-label">Кофе</span><span class="wq-amount">250 мл</span></div>
@@ -1140,6 +1244,27 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 
 </div><!-- /quests -->
 
+
+<!-- ══════════════════════════════════════
+     EXERCISES LIBRARY SCREEN
+══════════════════════════════════════ -->
+<div class="screen" id="s-exlib">
+  <div class="screen-title">Упражнения <em>и техника</em></div>
+
+  <div class="ex-tabs" id="exTabs">
+    <div class="ex-tab active" onclick="filterEx('all',this)">Все</div>
+    <div class="ex-tab" onclick="filterEx('chest',this)">Грудь</div>
+    <div class="ex-tab" onclick="filterEx('back',this)">Спина</div>
+    <div class="ex-tab" onclick="filterEx('legs',this)">Ноги</div>
+    <div class="ex-tab" onclick="filterEx('arms',this)">Руки</div>
+    <div class="ex-tab" onclick="filterEx('core',this)">Пресс</div>
+    <div class="ex-tab" onclick="filterEx('yoga',this)">Йога</div>
+    <div class="ex-tab" onclick="filterEx('cardio',this)">Кардио</div>
+  </div>
+
+  <div id="exList"></div>
+</div>
+
 </div><!-- /app -->
 
 <!-- BOTTOM NAV -->
@@ -1158,6 +1283,9 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   </button>
   <button class="nb" data-s="quests" onclick="goTo('quests',this)">
     <span class="ni">🏆</span>Квесты<span class="nb-pill"></span>
+  </button>
+  <button class="nb" data-s="exlib" onclick="goTo('exlib',this)">
+    <span class="ni">💪</span>Упр.<span class="nb-pill"></span>
   </button>
 </nav>
 
@@ -1340,7 +1468,7 @@ function goTo(id,btn){
   document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
   document.getElementById('s-'+id).classList.add('active');
   if(btn) btn.classList.add('active');
-  const handlers={home:renderHome,cal:renderCal,quests:renderQuests,water:renderWater};
+  const handlers={home:renderHome,cal:renderCal,quests:renderQuests,water:renderWater,exlib:renderExLib};
   if(handlers[id]) handlers[id]();
   window.scrollTo(0,0);
 }
@@ -1709,6 +1837,7 @@ function renderWater(){
   document.getElementById('waterGoalText').textContent=`Цель: ${WATER_GOAL} мл · Осталось: ${Math.max(0,WATER_GOAL-total)} мл`;
   document.getElementById('waterTrackFill').style.width=pct+'%';
   document.getElementById('hydrationTip').textContent=HYDRATION_TIPS[Math.floor(Math.random()*HYDRATION_TIPS.length)];
+  checkWaterWarning(total);
   const list=document.getElementById('waterLogList');
   if(!S.waterLog.length){
     list.innerHTML='<div class="empty-state"><span class="es-icon">💧</span><p class="es-text">Нет записей.<br>Добавь первый стакан!</p></div>';
@@ -1866,7 +1995,11 @@ function renderCal(){
     }else if(!isT&&!isFuture){cls+=' rest-d';}
     // Build colored dots for each activity type
     const uniqueTypes=[...new Set(types)];
-    const dotsHtml=uniqueTypes.length>0?`<div class="cal-dots">${uniqueTypes.map(t=>`<div class="cal-dot ${t}"></div>`).join('')}</div>`:'';
+    let dotsHtml='';
+    if(uniqueTypes.length>0){
+      const dotsDivs=uniqueTypes.map(t=>'<div class="cal-dot '+t+'"></div>').join('');
+      dotsHtml='<div class="cal-dots">'+dotsDivs+'</div>';
+    }
     if(!isFuture) html+=`<div class="${cls} clickable" onclick="openDayModal('${ds}')">${d}${dotsHtml}</div>`;
     else html+=`<div class="${cls}">${d}${dotsHtml}</div>`;
   }
@@ -2065,10 +2198,219 @@ function addWorkoutForDay() {
 }
 
 /* ═══════════════════════════════════════
+   BODY TIPS (personalised for 25yo male, 185cm, 80kg, ~19% fat)
+═══════════════════════════════════════ */
+const BODY_TIPS = [
+  // Nutrition
+  'Ты уже сбросил 3 кг за месяц — это хороший темп. Дефицит 600–700 ккал оптимален, не снижай калории ниже 1700.',
+  'Белок 150–165 г/день — твоя ключевая цифра. Сейчас ты на 100–150 г — добавь ещё 1 порцию белковой еды.',
+  'Распредели белок равномерно: 40–50 г за приём усваивается лучше, чем 100 г за раз. 3–4 приёма идеально.',
+  'Увеличь клетчатку до 25–35 г/день — это улучшит пищеварение и снизит голод. Овощи с каждым приёмом.',
+  'Если вес встал — это норма после первого месяца. Первые кг были водой и гликогеном. Держи план ещё 2 недели.',
+  'Вес может колебаться ±1.5 кг от воды. Смотри на тренд за 2 недели, а не на ежедневные показания весов.',
+  // Training
+  'Ходьба 1 час при 4–4.5 км/ч — хорошее кардио. Добавь наклон 3–5% и сожжёшь на 20–30% больше калорий.',
+  'Ты сидишь 6–7 ч в день — это поднимает риски для осанки. Йога 2–3 раза в неделю это напрямую компенсирует.',
+  'Добавь силовые 2 раза в неделю — без этого при дефиците тело теряет мышцы вместе с жиром.',
+  'Сон 6–8 ч — критично. Недосып поднимает кортизол и буквально тормозит жиросжигание на 20–30%.',
+  // Body recomposition
+  'Цель 12–15% жира реалистична за 4–6 месяцев при твоём темпе. Сейчас ~19% — отличная отправная точка.',
+  'ИМТ 23.3 — норма. Но ИМТ не видит мышцы. Ориентируйся на процент жира и самочувствие, не на вес.',
+  'Периодические высококалорийные дни — не провал. Они перезапускают лептин и снижают риск стагнации.',
+  'Метаболизм нормальный — это хорошо. Значит организм не в режиме выживания и готов отдавать жир.',
+];
+
+/* ═══════════════════════════════════════
+   EXERCISES DATABASE
+═══════════════════════════════════════ */
+const EXERCISES = [
+  // CHEST
+  {id:'push',group:'chest',icon:'🤸',name:'Отжимания',muscles:'Грудь, трицепс, плечи',diff:'easy',
+   sets:'3–4 подхода × 10–20 повт',
+   how:'Руки чуть шире плеч. Тело — прямая линия от головы до пят. Опускайся до касания грудью пола. Локти 45° от тела, не 90°.',
+   tip:'Не можешь 10 раз? Начни с колен. Слишком легко? Ноги на стул — нагрузка на верх груди.'},
+  {id:'push_wide',group:'chest',icon:'💪',name:'Широкие отжимания',muscles:'Внешняя грудь, дельты',diff:'easy',
+   sets:'3 подхода × 8–15 повт',
+   how:'Руки на 1.5× ширины плеч. Медленный спуск (2 сек), быстрый подъём. Сводишь лопатки в нижней точке.',
+   tip:'Делай после обычных отжиманий — хорошо добивает грудь.'},
+  // BACK
+  {id:'superman',group:'back',icon:'🦸',name:'Супермен',muscles:'Нижняя спина, ягодицы',diff:'easy',
+   sets:'3 подхода × 15 повт',
+   how:'Лёжа на животе, руки вперёд. Одновременно поднимай руки и ноги на 15–20 см от пола. Держи 2 сек, опускай.',
+   tip:'Отличное упражнение для осанки — ты сидишь 6–7 ч в день, это компенсирует.'},
+  {id:'row',group:'back',icon:'🏋️',name:'Тяга гантели в наклоне',muscles:'Широчайшие, бицепс, задняя дельта',diff:'med',
+   sets:'3–4 подхода × 10–12 повт',
+   how:'Одна рука и колено на скамье. Спина параллельна полу. Тяни гантель к поясу, локоть вдоль тела. Пауза вверху 1 сек.',
+   tip:'Не скручивай корпус. Думай о движении локтя, а не руки — лучше включается спина.'},
+  {id:'pullover',group:'back',icon:'🔄',name:'Пуловер с гантелей',muscles:'Широчайшие, грудь, трицепс',diff:'med',
+   sets:'3 подхода × 12 повт',
+   how:'Лёжа на скамье поперёк. Гантель двумя руками над грудью. Плавно опускай за голову — чуть ниже уровня головы. Возвращай через дугу.',
+   tip:'Контролируй вес — растяжение широчайших при опускании должно чувствоваться.'},
+  // LEGS
+  {id:'squat',group:'legs',icon:'🦵',name:'Приседания',muscles:'Квадрицепс, ягодицы, бицепс бедра',diff:'easy',
+   sets:'3–4 подхода × 15–20 повт',
+   how:'Ноги чуть шире плеч, носки слегка в стороны. Опускайся как на стул — бёдра параллельны полу. Колени над носками, спина прямая.',
+   tip:'Пята не должна отрываться. Если отрывается — работай над гибкостью голеностопа.'},
+  {id:'lunge',group:'legs',icon:'🚶',name:'Выпады с гантелями',muscles:'Квадрицепс, ягодицы, стабилизаторы',diff:'med',
+   sets:'3 подхода × 10 повт каждой ногой',
+   how:'Шаг вперёд, опусти заднее колено почти до пола. Переднее колено над щиколоткой. Оттолкнись пяткой, вернись назад.',
+   tip:'Держи корпус вертикально — не наклоняйся вперёд. Гантели в руках увеличат нагрузку.'},
+  {id:'glute_bridge',group:'legs',icon:'🍑',name:'Ягодичный мостик',muscles:'Ягодицы, бицепс бедра',diff:'easy',
+   sets:'3–4 подхода × 20 повт',
+   how:'Лёжа на спине, колени согнуты. Поднимай таз до прямой линии плечи–колени. Сожми ягодицы вверху, держи 2 сек.',
+   tip:'Хочешь сложнее? Положи гантель на бёдра или поставь одну ногу на стул.'},
+  // ARMS
+  {id:'curl',group:'arms',icon:'💪',name:'Сгибание рук с гантелями',muscles:'Бицепс',diff:'easy',
+   sets:'3 подхода × 12–15 повт',
+   how:'Стоя, гантели вдоль тела. Сгибай руки поочерёдно или вместе. Локоть неподвижен у корпуса. Вверху — поворот кисти наружу.',
+   tip:'Не раскачивай корпус. Медленное опускание (3 сек) даёт больше роста бицепса.'},
+  {id:'tricep_ext',group:'arms',icon:'🔱',name:'Разгибание над головой',muscles:'Трицепс',diff:'med',
+   sets:'3 подхода × 12 повт',
+   how:'Стоя или сидя, гантель двумя руками над головой. Согни локти — гантель за голову. Разгибай вверх. Локти смотрят в потолок.',
+   tip:'Трицепс — 2/3 объёма руки. Это упражнение лучше растит руки, чем бицепс-кёрл.'},
+  {id:'hammer',group:'arms',icon:'🔨',name:'Молотковые сгибания',muscles:'Бицепс, брахиалис, предплечье',diff:'easy',
+   sets:'3 подхода × 12 повт',
+   how:'Как обычный кёрл, но ладони смотрят друг на друга (нейтральный хват). Движение строго вертикальное.',
+   tip:'Включает брахиалис под бицепсом — визуально делает руки шире.'},
+  // CORE
+  {id:'plank',group:'core',icon:'🏋️',name:'Планка',muscles:'Весь кор, плечи, ягодицы',diff:'easy',
+   sets:'3–4 подхода × 30–60 сек',
+   how:'Упор на предплечья или руки. Тело прямое — не поднимай таз, не проваливай поясницу. Смотри в пол. Дыши ровно.',
+   tip:'Напрягай пресс и ягодицы одновременно — так поясница не устаёт, а кор работает сильнее.'},
+  {id:'crunch',group:'core',icon:'🌀',name:'Скручивания',muscles:'Верхний пресс',diff:'easy',
+   sets:'3 подхода × 15–20 повт',
+   how:'Лёжа на спине, колени согнуты. Руки у висков. Поднимай только лопатки, не весь корпус. Выдох в точке сжатия.',
+   tip:'Не тяни за шею руками. Фокусируйся на сжатии пресса — не на высоте подъёма.'},
+  {id:'leg_raise',group:'core',icon:'🦵',name:'Подъём ног лёжа',muscles:'Нижний пресс, сгибатели бедра',diff:'med',
+   sets:'3 подхода × 12–15 повт',
+   how:'Лёжа на спине, руки под ягодицами. Ноги прямые. Поднимай до 90°, медленно опускай — не касаясь пола.',
+   tip:'Поясница прижата к полу во всё время. Если отрывается — согни колени немного.'},
+  {id:'oblique',group:'core',icon:'🔄',name:'Велосипед',muscles:'Косые мышцы пресса',diff:'easy',
+   sets:'3 подхода × 20 повт (по 10 на сторону)',
+   how:'Лёжа на спине, руки у висков. Поочерёдно тяни локоть к противоположному колену. Другая нога вытянута.',
+   tip:'Медленнее = эффективнее. Скорость — враг техники в этом упражнении.'},
+  // YOGA
+  {id:'downdog',group:'yoga',icon:'🐕',name:'Собака мордой вниз',muscles:'Задняя поверхность бедра, плечи, спина',diff:'easy',
+   sets:'5 вдохов-выдохов × 3–5 раз',
+   how:'Из планки подними таз вверх и назад — тело в форме перевёрнутой V. Пятки тянутся к полу. Спина прямая.',
+   tip:'Пятки не обязаны касаться пола — особенно в начале. Сгибай колени если нужно.'},
+  {id:'warrior',group:'yoga',icon:'⚔️',name:'Воин I',muscles:'Бёдра, пах, грудь, плечи',diff:'easy',
+   sets:'5 вдохов × каждая сторона',
+   how:'Из выпада поверни заднюю стопу на 45°. Выпрями корпус, руки вверх. Согни переднее колено до 90°.',
+   tip:'Бёдра смотрят вперёд. Задняя нога — опора. Вытягивайся вверх через макушку.'},
+  {id:'child',group:'yoga',icon:'🧘',name:'Поза ребёнка',muscles:'Нижняя спина, бёдра, голени',diff:'easy',
+   sets:'1–2 мин, 2–3 раза',
+   how:'Сядь на пятки, наклонись вперёд, вытяни руки. Лоб к полу. Дыши глубоко — на выдохе расслабляй поясницу.',
+   tip:'Лучшее упражнение после долгого сидения. Делай каждый день — 2 минуты снимают напряжение поясницы.'},
+  {id:'cat_cow',group:'yoga',icon:'🐄',name:'Кошка-корова',muscles:'Позвоночник, шея, пресс',diff:'easy',
+   sets:'10 циклов утром',
+   how:'На четвереньках. Вдох — прогни поясницу вниз, грудь вперёд (корова). Выдох — округли спину вверх (кошка).',
+   tip:'Идеально для разминки и для твоей осанки после сидячей работы.'},
+  // CARDIO
+  {id:'jumping',group:'cardio',icon:'⬆️',name:'Прыжки на месте',muscles:'Всё тело, сердечно-сосудистая',diff:'easy',
+   sets:'4 × 30 сек с отдыхом 30 сек',
+   how:'Прыгай с разведением рук и ног одновременно. Приземляйся мягко на носки. Держи темп.',
+   tip:'Заменяет 5 мин бега по интенсивности. Хорошо разогревает перед тренировкой.'},
+  {id:'mountain',group:'cardio',icon:'⛰️',name:'Бег в гору (планка)',muscles:'Пресс, плечи, сгибатели бедра',diff:'med',
+   sets:'4 × 20 повт каждой ногой',
+   how:'Из планки поочерёдно тяни колени к груди в быстром темпе. Таз не поднимать.',
+   tip:'Высокоинтенсивное упражнение — отлично для жиросжигания в коротких тренировках.'},
+];
+
+let exFilter_ = 'all';
+
+function filterEx(group, btn) {
+  exFilter_ = group;
+  document.querySelectorAll('.ex-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderExLib();
+}
+
+function toggleEx(id) {
+  const card = document.getElementById('exc-'+id);
+  card.classList.toggle('open');
+}
+
+function renderExLib() {
+  const list = document.getElementById('exList');
+  const filtered = exFilter_==='all' ? EXERCISES : EXERCISES.filter(e=>e.group===exFilter_);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><span class="es-icon">🔍</span><p class="es-text">Нет упражнений в этой категории</p></div>';return;}
+  const diffLabel = {easy:'Начальный',med:'Средний',hard:'Продвинутый'};
+  list.innerHTML = filtered.map(e => `
+    <div class="ex-card" id="exc-${e.id}">
+      <div class="ex-card-header" onclick="toggleEx('${e.id}')">
+        <span class="ex-icon">${e.icon}</span>
+        <div class="ex-info">
+          <div class="ex-name">${e.name}</div>
+          <div class="ex-muscles">${e.muscles}</div>
+        </div>
+        <span class="ex-diff ${e.diff}">${diffLabel[e.diff]}</span>
+        <span class="ex-chevron">▼</span>
+      </div>
+      <div class="ex-details">
+        <div class="ex-sets">📋 ${e.sets}</div>
+        <div class="ex-how">${e.how}</div>
+        <div class="ex-tip-box">💡 ${e.tip}</div>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════
+   BODY DAILY TIP
+═══════════════════════════════════════ */
+function renderBodyTip() {
+  const el = document.getElementById('bodyDailyTip');
+  if(!el) return;
+  const idx = new Date().getDate() % BODY_TIPS.length;
+  el.textContent = BODY_TIPS[idx];
+}
+
+/* ═══════════════════════════════════════
+   WATER WARNING
+═══════════════════════════════════════ */
+const WATER_MAX = 3800; // мл — абсолютный максимум для параметров Кирилла
+const WATER_WARN1 = 2850; // цель выполнена
+const WATER_WARN2 = 3400; // явный перебор
+
+function checkWaterWarning(total) {
+  const el = document.getElementById('waterWarning');
+  const txt = document.getElementById('waterWarningText');
+  if(!el) return;
+  if(total >= WATER_MAX) {
+    el.classList.add('show');
+    el.style.borderColor = 'rgba(244,63,94,.4)';
+    el.style.background = 'rgba(244,63,94,.1)';
+    txt.style.color = 'var(--rose2)';
+    txt.textContent = '🚫 Стоп. Больше 3.8л при твоих параметрах нарушает баланс натрия. Почкам нужен отдых.';
+  } else if(total >= WATER_WARN2) {
+    el.classList.add('show');
+    el.style.borderColor = 'rgba(244,63,94,.3)';
+    el.style.background = 'rgba(244,63,94,.08)';
+    txt.style.color = 'var(--rose2)';
+    txt.textContent = '⚠️ Уже 3.4л — это выше нормы для твоего веса. Больше воды не нужно до завтра.';
+  } else if(total >= WATER_WARN1) {
+    el.classList.add('show');
+    el.style.borderColor = '';
+    el.style.background = '';
+    txt.style.color = '';
+    txt.textContent = '✅ Дневная норма выполнена! Остальная жидкость — из еды и чая. Не надо пить через силу.';
+  } else {
+    el.classList.remove('show');
+    el.style.borderColor = '';
+    el.style.background = '';
+  }
+}
+
+/* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 // Init: load data then render
 (async()=>{
+  // Tell Telegram to expand the WebApp to full screen
+  if(window.Telegram && window.Telegram.WebApp){
+    window.Telegram.WebApp.expand();
+    window.Telegram.WebApp.ready();
+  }
   await load();
   renderHome();
   checkAchs();
