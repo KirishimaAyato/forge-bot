@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.expand();window.Telegram.WebApp.ready();}</script>
 <title>FORGE — Your Body, Your Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1064,7 +1065,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <div class="water-quick section-gap">
     <div class="wq-btn" onclick="addWater(250)"><span class="wq-icon">☕</span><span class="wq-label">Кофе</span><span class="wq-amount">250 мл</span></div>
     <div class="wq-btn" onclick="addWater(250)"><span class="wq-icon">🥛</span><span class="wq-label">Стакан</span><span class="wq-amount">250 мл</span></div>
-    <div class="wq-btn special" onclick="addWater(950)"><span class="wq-icon">🍾</span><span class="wq-label">Бутылка</span><span class="wq-amount">950 мл</span></div>
+    <div class="wq-btn" onclick="addWater(950)"><span class="wq-icon">🍾</span><span class="wq-label">Бутылка</span><span class="wq-amount">950 мл</span></div>
   </div>
 
   <!-- Custom amount -->
@@ -1866,8 +1867,8 @@ function renderCal(){
     // Build colored dots for each activity type
     const uniqueTypes=[...new Set(types)];
     const dotsHtml=uniqueTypes.length>0?`<div class="cal-dots">${uniqueTypes.map(t=>`<div class="cal-dot ${t}"></div>`).join('')}</div>`:'';
-    const clickable=!isFuture?` clickable" onclick="openDayModal('${ds}',false)`:'"';
-    html+=`<div class="${cls}${clickable}>${d}${dotsHtml}</div>`;
+    if(!isFuture) html+=`<div class="${cls} clickable" onclick="openDayModal('${ds}')">${d}${dotsHtml}</div>`;
+    else html+=`<div class="${cls}">${d}${dotsHtml}</div>`;
   }
   document.getElementById('calDays').innerHTML=html;
   // Month stats
