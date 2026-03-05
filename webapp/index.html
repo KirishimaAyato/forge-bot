@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <script>if(window.Telegram&&window.Telegram.WebApp){window.Telegram.WebApp.expand();window.Telegram.WebApp.ready();}</script>
 <title>FORGE — Your Body, Your Quest</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -76,6 +76,7 @@ body{
 .nav{
   position:fixed;bottom:0;left:0;right:0;
   width:100%;max-width:100%;
+  transform:translateZ(0);
   padding:8px 4px calc(8px + env(safe-area-inset-bottom, 16px));
   background:rgba(8,8,15,.88);
   backdrop-filter:blur(32px) saturate(1.8);
@@ -1107,7 +1108,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <!-- intensity removed - XP is objective -->
 
   <!-- Duration -->
-  <div class="label">Длительность (минуты)</div>
+  <div class="label" id="durLabel">Длительность (минуты)</div>
   <div class="duration-row section-gap">
     <div class="dur-btn" onclick="changeDur(-5)">−</div>
     <div class="dur-display"><span id="durVal">30</span> <span class="dur-unit">мин</span></div>
@@ -1615,13 +1616,13 @@ function epBuildList(ei, query) {
   ];
   var q = (query || '').trim().toLowerCase();
   var out = '';
-  // Search input at top
-  out += '<div style="padding:8px 10px 4px;">'
-    + '<input id="epsearch' + ei + '" type="text" '
-    + 'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);'
-    + 'border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;'
+  // Search field — NO autofocus attribute, user taps it manually
+  out += '<div style="padding:8px 10px 6px;">'
+    + '<input id="epsearch' + ei + '" type="search" autocomplete="off" autocorrect="off"'
+    + ' style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.07);'
+    + 'border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 12px;'
     + 'font-size:16px;color:#fff;font-family:Outfit,sans-serif;outline:none;" '
-    + 'placeholder="Поиск..." '
+    + 'placeholder="🔍 Поиск..." value="' + (q ? query.replace(/"/g,'&quot;') : '') + '" '
     + 'oninput="epSearch(' + ei + ',this.value)">'
     + '</div>';
   groups.forEach(function(g) {
@@ -1648,15 +1649,13 @@ function epAttach(ei) {
       ev.preventDefault();
       epPick(parseInt(item.dataset.ei), item.dataset.name);
     });
-    item.addEventListener('click', function(ev) {
+    item.addEventListener('click', function() {
       epPick(parseInt(item.dataset.ei), item.dataset.name);
     });
   });
   var ownBtn = document.getElementById('edown' + ei);
   if (ownBtn) {
-    ownBtn.addEventListener('touchend', function(ev) {
-      ev.preventDefault(); epShowOwn(ei);
-    });
+    ownBtn.addEventListener('touchend', function(ev) { ev.preventDefault(); epShowOwn(ei); });
     ownBtn.addEventListener('click', function() { epShowOwn(ei); });
   }
 }
@@ -1669,50 +1668,21 @@ function epOpen(ei) {
   el.innerHTML = epBuildList(ei, '');
   el.style.display = 'block';
   epAttach(ei);
-  // Focus search after short delay (avoids zoom)
-  setTimeout(function() {
-    var s = document.getElementById('epsearch' + ei);
-    if (s) s.focus();
-  }, 100);
+  // Scroll so the exercise field is visible
+  var dur = document.getElementById('durLabel');
+  if (dur) dur.scrollIntoView({behavior:'smooth', block:'start'});
+  // DO NOT focus search — user taps it manually to avoid unwanted keyboard
 }
+
 
 function epSearch(ei, query) {
   var el = document.getElementById('epd' + ei);
   if (!el) return;
-  // Rebuild list keeping search input value
-  var groups = [
-    {label: 'Начальный ×1.0', diff: 'easy'},
-    {label: 'Средний ×1.5',   diff: 'med'},
-    {label: 'Продвинутый ×2.0', diff: 'hard'},
-  ];
-  var q = (query || '').trim().toLowerCase();
-  var out = '<div style="padding:8px 10px 4px;">'
-    + '<input id="epsearch' + ei + '" type="text" '
-    + 'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);'
-    + 'border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;'
-    + 'font-size:16px;color:#fff;font-family:Outfit,sans-serif;outline:none;" '
-    + 'placeholder="Поиск..." '
-    + 'value="' + query.replace(/"/g,'&quot;') + '" '
-    + 'oninput="epSearch(' + ei + ',this.value)">'
-    + '</div>';
-  groups.forEach(function(g) {
-    var items = EXERCISES.filter(function(e) {
-      return e.diff === g.diff && (!q || e.name.toLowerCase().indexOf(q) >= 0);
-    });
-    if (!items.length) return;
-    out += '<div class="epd-grp">' + g.label + '</div>';
-    items.forEach(function(e) {
-      out += '<div class="epd-item" data-ei="' + ei + '" data-name="'
-        + e.name.replace(/"/g, '&quot;') + '">'
-        + e.name + '</div>';
-    });
-  });
-  out += '<div class="epd-own" id="edown' + ei + '">✏️ Написать своё</div>';
-  el.innerHTML = out;
+  el.innerHTML = epBuildList(ei, query);
   epAttach(ei);
-  // Keep focus on search input
+  // Keep focus on search input without scrolling
   var s = document.getElementById('epsearch' + ei);
-  if (s) { s.focus(); var v = s.value; s.value=''; s.value=v; }
+  if (s) { var v = s.value; s.value = ''; s.value = v; }
 }
 
 function epShowOwn(ei) {
