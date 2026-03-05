@@ -76,7 +76,6 @@ body{
 .nav{
   position:fixed;bottom:0;left:0;right:0;
   width:100%;max-width:100%;
-  transform:translateZ(0);
   padding:8px 4px calc(8px + env(safe-area-inset-bottom, 16px));
   background:rgba(8,8,15,.88);
   backdrop-filter:blur(32px) saturate(1.8);
@@ -1645,17 +1644,31 @@ function epAttach(ei) {
   var el = document.getElementById('epd' + ei);
   if (!el) return;
   el.querySelectorAll('.epd-item').forEach(function(item) {
+    var touchStartY = 0;
+    var touchStartX = 0;
+    item.addEventListener('touchstart', function(ev) {
+      touchStartY = ev.touches[0].clientY;
+      touchStartX = ev.touches[0].clientX;
+    }, {passive: true});
     item.addEventListener('touchend', function(ev) {
-      ev.preventDefault();
-      epPick(parseInt(item.dataset.ei), item.dataset.name);
-    });
-    item.addEventListener('click', function() {
-      epPick(parseInt(item.dataset.ei), item.dataset.name);
+      var dy = Math.abs(ev.changedTouches[0].clientY - touchStartY);
+      var dx = Math.abs(ev.changedTouches[0].clientX - touchStartX);
+      // Only pick if it was a tap, not a scroll gesture
+      if (dy < 8 && dx < 8) {
+        ev.preventDefault();
+        epPick(parseInt(item.dataset.ei), item.dataset.name);
+      }
     });
   });
   var ownBtn = document.getElementById('edown' + ei);
   if (ownBtn) {
-    ownBtn.addEventListener('touchend', function(ev) { ev.preventDefault(); epShowOwn(ei); });
+    var ty = 0;
+    ownBtn.addEventListener('touchstart', function(ev) { ty = ev.touches[0].clientY; }, {passive:true});
+    ownBtn.addEventListener('touchend', function(ev) {
+      if (Math.abs(ev.changedTouches[0].clientY - ty) < 8) {
+        ev.preventDefault(); epShowOwn(ei);
+      }
+    });
     ownBtn.addEventListener('click', function() { epShowOwn(ei); });
   }
 }
@@ -1670,7 +1683,7 @@ function epOpen(ei) {
   epAttach(ei);
   // Scroll so the exercise field is visible
   var dur = document.getElementById('durLabel');
-  if (dur) dur.scrollIntoView({behavior:'smooth', block:'start'});
+  if (dur) dur.scrollIntoView({behavior:'smooth', block:'nearest'});
   // DO NOT focus search — user taps it manually to avoid unwanted keyboard
 }
 
@@ -3015,6 +3028,24 @@ function checkWaterWarning(total) {
   renderHome();
   checkAchs();
 })();
+/* ── NAV KEYBOARD FIX ── */
+(function() {
+  var nav = null;
+  function pinNav() {
+    if (!nav) nav = document.querySelector('.nav');
+    if (!nav) return;
+    if (window.visualViewport) {
+      var vv = window.visualViewport;
+      var bottom = window.innerHeight - vv.height - vv.offsetTop;
+      nav.style.bottom = Math.max(0, bottom) + 'px';
+    }
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', pinNav);
+    window.visualViewport.addEventListener('scroll', pinNav);
+  }
+})();
+
 </script>
 
 <!-- ═══ DAY EDIT MODAL ═══ -->
