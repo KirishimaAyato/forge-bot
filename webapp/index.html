@@ -74,9 +74,9 @@ body{
    BOTTOM NAV
 ═══════════════════════════════════════ */
 .nav{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:100%;max-width:430px;
-  padding:12px 8px calc(12px + var(--safe-b));
+  position:fixed;bottom:0;left:0;right:0;
+  width:100%;max-width:100%;
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom, 16px));
   background:rgba(8,8,15,.88);
   backdrop-filter:blur(32px) saturate(1.8);
   -webkit-backdrop-filter:blur(32px) saturate(1.8);
@@ -904,10 +904,10 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 /* ── EXERCISE PICKER ── */
 .epw{position:relative;flex:1;}
 .epd{
-  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:300;
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:500;
   background:#1a1a2e;border:1px solid rgba(255,255,255,.12);
-  border-radius:12px;max-height:200px;overflow-y:auto;
-  box-shadow:0 8px 32px rgba(0,0,0,.7);
+  border-radius:12px;max-height:55vh;overflow-y:auto;
+  box-shadow:0 8px 48px rgba(0,0,0,.85);
 }
 .epd::-webkit-scrollbar{width:3px;}
 .epd::-webkit-scrollbar-thumb{background:rgba(124,108,255,.4);border-radius:3px;}
@@ -1614,22 +1614,51 @@ function epBuildList(ei, query) {
     {label: 'Продвинутый ×2.0', diff: 'hard'},
   ];
   var q = (query || '').trim().toLowerCase();
-  var html = '';
+  var out = '';
+  // Search input at top
+  out += '<div style="padding:8px 10px 4px;">'
+    + '<input id="epsearch' + ei + '" type="text" '
+    + 'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);'
+    + 'border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;'
+    + 'font-size:16px;color:#fff;font-family:Outfit,sans-serif;outline:none;" '
+    + 'placeholder="Поиск..." '
+    + 'oninput="epSearch(' + ei + ',this.value)">'
+    + '</div>';
   groups.forEach(function(g) {
     var items = EXERCISES.filter(function(e) {
       return e.diff === g.diff && (!q || e.name.toLowerCase().indexOf(q) >= 0);
     });
     if (!items.length) return;
-    html += '<div class="epd-grp">' + g.label + '</div>';
+    out += '<div class="epd-grp">' + g.label + '</div>';
     items.forEach(function(e) {
-      // Use data-name to avoid quote issues in onclick
-      html += '<div class="epd-item" data-ei="' + ei + '" data-name="'
+      out += '<div class="epd-item" data-ei="' + ei + '" data-name="'
         + e.name.replace(/"/g, '&quot;') + '">'
         + e.name + '</div>';
     });
   });
-  html += '<div class="epd-own" onclick="epClose(' + ei + ')">✏️ Написать своё</div>';
-  return html;
+  out += '<div class="epd-own" id="edown' + ei + '">✏️ Написать своё</div>';
+  return out;
+}
+
+function epAttach(ei) {
+  var el = document.getElementById('epd' + ei);
+  if (!el) return;
+  el.querySelectorAll('.epd-item').forEach(function(item) {
+    item.addEventListener('touchend', function(ev) {
+      ev.preventDefault();
+      epPick(parseInt(item.dataset.ei), item.dataset.name);
+    });
+    item.addEventListener('click', function(ev) {
+      epPick(parseInt(item.dataset.ei), item.dataset.name);
+    });
+  });
+  var ownBtn = document.getElementById('edown' + ei);
+  if (ownBtn) {
+    ownBtn.addEventListener('touchend', function(ev) {
+      ev.preventDefault(); epShowOwn(ei);
+    });
+    ownBtn.addEventListener('click', function() { epShowOwn(ei); });
+  }
 }
 
 function epOpen(ei) {
@@ -1637,27 +1666,84 @@ function epOpen(ei) {
   _epOpen = ei;
   var el = document.getElementById('epd' + ei);
   if (!el) return;
-  el.innerHTML = epBuildList(ei, exercises_[ei] ? exercises_[ei].name : '');
+  el.innerHTML = epBuildList(ei, '');
   el.style.display = 'block';
-  // Attach click handlers after render
-  el.querySelectorAll('.epd-item').forEach(function(item) {
-    item.addEventListener('mousedown', function(ev) {
-      ev.preventDefault();
-      epPick(parseInt(item.dataset.ei), item.dataset.name);
-    });
-  });
+  epAttach(ei);
+  // Focus search after short delay (avoids zoom)
+  setTimeout(function() {
+    var s = document.getElementById('epsearch' + ei);
+    if (s) s.focus();
+  }, 100);
 }
 
-function epFilter(ei, query) {
+function epSearch(ei, query) {
   var el = document.getElementById('epd' + ei);
-  if (!el || el.style.display === 'none') return;
-  el.innerHTML = epBuildList(ei, query);
-  el.querySelectorAll('.epd-item').forEach(function(item) {
-    item.addEventListener('mousedown', function(ev) {
-      ev.preventDefault();
-      epPick(parseInt(item.dataset.ei), item.dataset.name);
+  if (!el) return;
+  // Rebuild list keeping search input value
+  var groups = [
+    {label: 'Начальный ×1.0', diff: 'easy'},
+    {label: 'Средний ×1.5',   diff: 'med'},
+    {label: 'Продвинутый ×2.0', diff: 'hard'},
+  ];
+  var q = (query || '').trim().toLowerCase();
+  var out = '<div style="padding:8px 10px 4px;">'
+    + '<input id="epsearch' + ei + '" type="text" '
+    + 'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);'
+    + 'border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 10px;'
+    + 'font-size:16px;color:#fff;font-family:Outfit,sans-serif;outline:none;" '
+    + 'placeholder="Поиск..." '
+    + 'value="' + query.replace(/"/g,'&quot;') + '" '
+    + 'oninput="epSearch(' + ei + ',this.value)">'
+    + '</div>';
+  groups.forEach(function(g) {
+    var items = EXERCISES.filter(function(e) {
+      return e.diff === g.diff && (!q || e.name.toLowerCase().indexOf(q) >= 0);
+    });
+    if (!items.length) return;
+    out += '<div class="epd-grp">' + g.label + '</div>';
+    items.forEach(function(e) {
+      out += '<div class="epd-item" data-ei="' + ei + '" data-name="'
+        + e.name.replace(/"/g, '&quot;') + '">'
+        + e.name + '</div>';
     });
   });
+  out += '<div class="epd-own" id="edown' + ei + '">✏️ Написать своё</div>';
+  el.innerHTML = out;
+  epAttach(ei);
+  // Keep focus on search input
+  var s = document.getElementById('epsearch' + ei);
+  if (s) { s.focus(); var v = s.value; s.value=''; s.value=v; }
+}
+
+function epShowOwn(ei) {
+  // Replace dropdown with a text input for custom exercise name
+  var el = document.getElementById('epd' + ei);
+  if (!el) return;
+  el.innerHTML = '<div style="padding:10px;">'
+    + '<div style="font-size:11px;color:var(--t3);margin-bottom:6px;">Введи название упражнения:</div>'
+    + '<input id="epown' + ei + '" type="text" '
+    + 'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);'
+    + 'border:1px solid rgba(124,108,255,.4);border-radius:8px;padding:10px 12px;'
+    + 'font-size:16px;color:#fff;font-family:Outfit,sans-serif;outline:none;" '
+    + 'placeholder="Напр: Отжимания на кулаках" '
+    + 'value="' + (exercises_[ei] ? exercises_[ei].name.replace(/"/g,'&quot;') : '') + '">'
+    + '<button style="width:100%;margin-top:8px;padding:10px;background:rgba(124,108,255,.2);'
+    + 'border:1px solid rgba(124,108,255,.4);border-radius:8px;color:var(--v3);'
+    + 'font-size:14px;font-weight:600;cursor:pointer;" '
+    + 'onclick="epConfirmOwn(' + ei + ')">✅ Готово</button>'
+    + '</div>';
+  setTimeout(function() {
+    var inp = document.getElementById('epown' + ei);
+    if (inp) inp.focus();
+  }, 50);
+}
+
+function epConfirmOwn(ei) {
+  var inp = document.getElementById('epown' + ei);
+  if (!inp) return;
+  var name = inp.value.trim();
+  if (!name) return;
+  epPick(ei, name);
 }
 
 function epClose(ei) {
@@ -1669,7 +1755,10 @@ function epClose(ei) {
 function epPick(ei, name) {
   exercises_[ei].name = name;
   epClose(ei);
-  // Auto-fill sets from exercise database
+  // Update label div
+  var lbl = document.getElementById('eplbl' + ei);
+  if (lbl) lbl.innerHTML = '<span style="color:var(--t1);">' + name + '</span>';
+  // Auto-fill sets/reps from exercise database
   var exData = EXERCISES.find(function(e) { return e.name === name; });
   if (exData) {
     var sets = [];
@@ -1682,7 +1771,12 @@ function epPick(ei, name) {
   renderExercises();
 }
 
-// Close picker on outside click
+// Close picker on outside click/touch
+document.addEventListener('touchstart', function(ev) {
+  if (_epOpen < 0) return;
+  var wrap = document.getElementById('epw' + _epOpen);
+  if (wrap && !wrap.contains(ev.target)) epClose(_epOpen);
+}, {passive:true});
 document.addEventListener('click', function(ev) {
   if (_epOpen < 0) return;
   var wrap = document.getElementById('epw' + _epOpen);
@@ -1696,12 +1790,10 @@ function renderExercises(){
     <div style="margin-bottom:16px;background:rgba(255,255,255,.03);border:1px solid var(--rim);border-radius:var(--r12);padding:12px;">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
         <div class="epw" id="epw${ei}">
-          <input class="inp" style="padding:10px 12px;font-size:14px;width:100%;box-sizing:border-box;"
-            placeholder="Выбери или напиши упражнение..."
-            value="${ex.name}"
-            oninput="exercises_[${ei}].name=this.value;checkPR();epFilter(${ei},this.value)"
-            onfocus="epOpen(${ei})"
-            autocomplete="off">
+          <div class="inp" style="padding:10px 12px;font-size:16px;width:100%;box-sizing:border-box;cursor:pointer;min-height:44px;display:flex;align-items:center;"
+            onclick="epOpen(${ei})" id="eplbl${ei}">
+            <span style="color:${ex.name ? 'var(--t1)' : 'var(--t3)'};">${ex.name || 'Выбери или напиши упражнение...'}</span>
+          </div>
           <div class="epd" id="epd${ei}" style="display:none"></div>
         </div>
         ${exercises_.length>1?`<button onclick="removeExercise(${ei})" style="flex-shrink:0;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:var(--r8);color:var(--rose2);padding:8px 12px;cursor:pointer;font-size:14px;">✕</button>`:''}
