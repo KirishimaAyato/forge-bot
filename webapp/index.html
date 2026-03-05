@@ -854,11 +854,12 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 }
 .ex-card-header{
   display:flex;align-items:center;gap:12px;
-  padding:14px 16px;cursor:pointer;
+  padding:14px 16px;cursor:pointer;line-height:1.3;
 }
+.ex-icon{font-size:26px;flex-shrink:0;line-height:1;align-self:center;}
 .ex-card-header:active{opacity:.8;}
 .ex-icon{font-size:26px;flex-shrink:0;}
-.ex-info{flex:1;min-width:0;}
+.ex-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
 .ex-name{font-size:14px;font-weight:700;color:var(--t1);}
 .ex-muscles{font-size:11px;color:var(--t3);margin-top:2px;}
 .ex-diff{
@@ -2107,59 +2108,39 @@ function dateFromStr(s){const[dd,mm,yy]=s.split('.');return new Date(parseInt(yy
    RECALCULATE STREAK FROM HISTORY
 ═══════════════════════════════════════ */
 function recalcStreak(){
-  // Build set of unique active days
   const activeDays = new Set(S.history.map(h=>h.date));
-  if(activeDays.size===0){S.streak=0;S.lastDate='';return;}
-  // Walk backwards from today counting consecutive days
-  let streak=0;
-  const td=todayStr();
-  for(let i=0;;i++){
-    const d=dayOff(-i);
-    if(activeDays.has(d)){
-      streak++;
-      if(i===0||i>0) continue;
-    } else {
-      // Allow gap only if we haven't started counting yet (today has no workout)
-      if(streak===0 && i===0) continue;
-      break;
-    }
-  }
-  // Simpler: find longest streak ending today or yesterday
-  const sorted=[...activeDays].sort();
-  let best=0,cur=0,prev=null;
-  for(const d of sorted){
-    if(prev){
-      const[pd,pm,py]=prev.split('.').map(Number);
-      const[cd,cm,cy]=d.split('.').map(Number);
-      const prevDate=new Date(py,pm-1,pd);
-      const curDate=new Date(cy,cm-1,cd);
-      const diff=(curDate-prevDate)/864e5;
-      cur = diff===1 ? cur+1 : 1;
-    } else {
-      cur=1;
-    }
-    best=Math.max(best,cur);
-    prev=d;
-  }
-  // Current streak = streak ending at last active day
-  const lastActive=sorted[sorted.length-1];
-  const td2=todayStr(),yd=dayOff(-1);
-  if(lastActive===td2||lastActive===yd){
-    // Count backwards from lastActive
-    let s=0;
-    for(let i=0;;i++){
-      const[ld,lm,ly]=lastActive.split('.').map(Number);
-      const base=new Date(ly,lm-1,ld);
-      base.setDate(base.getDate()-i);
-      const ds=pad(base.getDate())+'.'+pad(base.getMonth()+1)+'.'+base.getFullYear();
-      if(activeDays.has(ds)) s++;
-      else break;
-    }
-    S.streak=s;
-  } else {
+  if(!activeDays.size){S.streak=0;S.lastDate='';return;}
+
+  // Helper: date string → timestamp (midnight)
+  function toTs(s){const[d,m,y]=s.split('.').map(Number);return new Date(y,m-1,d).getTime();}
+  // Helper: timestamp → date string
+  function toStr(ts){const d=new Date(ts);return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();}
+
+  const todayTs = new Date(new Date().setHours(0,0,0,0)).getTime();
+  const DAY = 864e5;
+
+  // The streak counts backwards from today OR yesterday (if no workout today yet)
+  // Start point: today if has workout, else yesterday
+  let startTs = activeDays.has(toStr(todayTs)) ? todayTs : todayTs - DAY;
+
+  // If even yesterday has no workout — streak is 0
+  if(!activeDays.has(toStr(startTs))){
     S.streak=0;
+    // lastDate = most recent workout date
+    const sorted=[...activeDays].sort((a,b)=>toTs(b)-toTs(a));
+    S.lastDate=sorted[0]||'';
+    return;
   }
-  S.lastDate=lastActive;
+
+  // Count consecutive days backwards from startTs
+  let streak=0;
+  let ts=startTs;
+  while(activeDays.has(toStr(ts))){
+    streak++;
+    ts-=DAY;
+  }
+  S.streak=streak;
+  S.lastDate=toStr(startTs);
 }
 
 /* ═══════════════════════════════════════
@@ -2648,6 +2629,7 @@ function checkWaterWarning(total) {
     window.Telegram.WebApp.ready();
   }
   await load();
+  recalcStreak(); // fix streak from history on every load
   // Seed initial body data if empty
   if(!S.bodyLog || S.bodyLog.length===0){
     S.bodyLog=[
