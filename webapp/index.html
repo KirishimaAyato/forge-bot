@@ -845,6 +845,8 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   background:var(--glass);border:1.5px solid var(--rim);
   border-radius:var(--rpill);font-size:12px;font-weight:600;
   color:var(--t2);cursor:pointer;transition:all .2s;white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;
+  line-height:1;
 }
 .ex-tab.active{border-color:var(--v2);background:rgba(124,108,255,.12);color:var(--v3);}
 .ex-card{
@@ -860,8 +862,8 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 .ex-card-header:active{opacity:.8;}
 .ex-icon{font-size:26px;flex-shrink:0;}
 .ex-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
-.ex-name{font-size:14px;font-weight:700;color:var(--t1);}
-.ex-muscles{font-size:11px;color:var(--t3);margin-top:2px;}
+.ex-name{font-size:14px;font-weight:700;color:var(--t1);line-height:1.2;}
+.ex-muscles{font-size:11px;color:var(--t3);margin-top:3px;line-height:1.3;}
 .ex-diff{
   padding:3px 9px;border-radius:var(--rpill);
   font-size:10px;font-weight:700;letter-spacing:.3px;flex-shrink:0;
@@ -973,7 +975,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
     <div class="quick-card water-card" onclick="goTo('water',document.querySelector('[data-s=water]'))">
       <div class="qc-top"><span class="qc-icon">💧</span><span class="qc-label">Вода сегодня</span></div>
       <div class="qc-val" id="homeWaterVal">0 мл</div>
-      <div class="qc-sub" id="homeWaterSub">цель: 2850 мл</div>
+      <div class="qc-sub" id="homeWaterSub">цель: 2500 мл</div>
       <div class="water-mini-bar"><div class="water-mini-fill" id="homeWaterBar" style="width:0%"></div></div>
     </div>
   </div>
@@ -1169,7 +1171,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <div class="water-big-display section-gap">
     <div class="water-amount" id="waterAmount">0</div>
     <div class="water-unit">мл выпито</div>
-    <div class="water-goal-text" id="waterGoalText">Цель: 2850 мл · Осталось: 2850 мл</div>
+    <div class="water-goal-text" id="waterGoalText">Цель: 2500 мл · Осталось: 2500 мл</div>
     <div class="water-track"><div class="water-track-fill" id="waterTrackFill" style="width:0%"></div></div>
   </div>
 
@@ -1188,7 +1190,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <div class="water-quick section-gap">
     <div class="wq-btn" onclick="addWater(250)"><span class="wq-icon">☕</span><span class="wq-label">Кофе</span><span class="wq-amount">250 мл</span></div>
     <div class="wq-btn" onclick="addWater(250)"><span class="wq-icon">🥛</span><span class="wq-label">Стакан</span><span class="wq-amount">250 мл</span></div>
-    <div class="wq-btn" onclick="addWater(950)"><span class="wq-icon">🍾</span><span class="wq-label">Бутылка</span><span class="wq-amount">950 мл</span></div>
+    <div class="wq-btn" onclick="addWater(950)"><span class="wq-icon">🫙</span><span class="wq-label">Бутылка</span><span class="wq-amount">950 мл</span></div>
   </div>
 
   <!-- Custom amount -->
@@ -1816,7 +1818,7 @@ function closeModal(){
 /* ═══════════════════════════════════════
    WATER
 ═══════════════════════════════════════ */
-const WATER_GOAL=2850; // 3 бутылки по 950мл
+const WATER_GOAL=2500; // 3 бутылки по 950мл
 
 function addWater(ml){
   S.waterLog.push({ml,time:timeStr()});
@@ -2590,7 +2592,7 @@ function renderBodyTip() {
    WATER WARNING
 ═══════════════════════════════════════ */
 const WATER_MAX = 3800; // мл — абсолютный максимум для параметров Кирилла
-const WATER_WARN1 = 2850; // цель выполнена
+const WATER_WARN1 = 2500; // цель выполнена
 const WATER_WARN2 = 3400; // явный перебор
 
 function checkWaterWarning(total) {
