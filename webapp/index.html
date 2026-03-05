@@ -900,6 +900,26 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 .bh-del{width:26px;height:26px;border-radius:50%;background:rgba(244,63,94,.1);
   border:1px solid rgba(244,63,94,.2);color:var(--rose2);cursor:pointer;
   display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+
+/* ── EXERCISE PICKER ── */
+.epw{position:relative;flex:1;}
+.epd{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:300;
+  background:#1a1a2e;border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;max-height:200px;overflow-y:auto;
+  box-shadow:0 8px 32px rgba(0,0,0,.7);
+}
+.epd::-webkit-scrollbar{width:3px;}
+.epd::-webkit-scrollbar-thumb{background:rgba(124,108,255,.4);border-radius:3px;}
+.epd-grp{padding:6px 12px 2px;font-size:10px;font-weight:700;
+  color:#a78bfa;letter-spacing:.8px;text-transform:uppercase;}
+.epd-item{padding:10px 14px;font-size:13px;color:#e2e8f0;cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.04);}
+.epd-item:active{background:rgba(124,108,255,.15);}
+.epd-item:last-child{border-bottom:none;}
+.epd-own{padding:10px 14px;font-size:13px;color:#a78bfa;font-weight:600;
+  cursor:pointer;border-top:1px solid rgba(255,255,255,.08);}
+.epd-own:active{background:rgba(124,108,255,.1);}
 </style>
 </head>
 <body>
@@ -994,9 +1014,9 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
       <span class="gc-lbl">Дорожка</span>
     </div>
     <div class="goal-card gc-home">
-      <span class="gc-icon">🏠</span>
+      <span class="gc-icon">💪</span>
       <span class="gc-val" id="homeExer">0</span>
-      <span class="gc-lbl">Упр. дома</span>
+      <span class="gc-lbl">Силовые</span>
     </div>
   </div>
 
@@ -1075,9 +1095,9 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
       <div class="wt-check" id="wc-walk"></div>
     </div>
     <div class="wt-btn" id="wt-home" onclick="selWT('home')">
-      <span class="wt-icon">🏠</span>
+      <span class="wt-icon">💪</span>
       <div class="wt-info">
-        <div class="wt-name">Упражнения дома</div>
+        <div class="wt-name">Силовые тренировки</div>
         <div class="wt-desc">Своим весом, отжимания, пресс · XP = время + повторения</div>
       </div>
       <div class="wt-check" id="wc-home"></div>
@@ -1235,7 +1255,7 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
   <div class="cal-legend section-gap">
     <div class="cl-item"><div class="cl-dot" style="background:#f472b6"></div>Йога</div>
     <div class="cl-item"><div class="cl-dot" style="background:var(--emerald2)"></div>Дорожка</div>
-    <div class="cl-item"><div class="cl-dot" style="background:var(--orange2)"></div>Упр. дома</div>
+    <div class="cl-item"><div class="cl-dot" style="background:var(--orange2)"></div>Силовые</div>
     <div class="cl-item"><div class="cl-dot" style="background:var(--rim2)"></div>Отдых</div>
   </div>
 
@@ -1339,8 +1359,8 @@ let calY = new Date().getFullYear(), calM = new Date().getMonth();
 ═══════════════════════════════════════ */
 const XP_BASE = { yoga:{light:40,medium:80,hard:140}, walk:{light:35,medium:70,hard:140}, home:{light:45,medium:90,hard:160} };
 
-const WNAME = { yoga:'Йога', walk:'Беговая дорожка', home:'Упражнения дома' };
-const WICO  = { yoga:'🧘', walk:'🚶', home:'🏠' };
+const WNAME = { yoga:'Йога', walk:'Беговая дорожка', home:'Силовые тренировки' };
+const WICO  = { yoga:'🧘', walk:'🚶', home:'💪' };
 const INAME = { light:'Лёгкая', medium:'Средняя', hard:'Тяжёлая' };
 
 const LEVELS = [
@@ -1393,13 +1413,13 @@ const RECS = {
   rest:{icon:'🛌',title:'Сегодня — день отдыха',text:'Твоё тело восстанавливается и растёт в покое. Не тренируйся сегодня — это не лень, это стратегия.'},
   yoga:{icon:'🧘',title:'Идеальный день для йоги',text:'Лёгкая растяжка улучшит восстановление и гибкость. 30–40 минут хатха или инь-йоги.'},
   walk:{icon:'🚶',title:'Время на дорожку',text:'Кардио-сессия поможет сжечь жир. 30–45 мин в зоне 60–70% пульса — оптимально.'},
-  home:{icon:'🏠',title:'Силовая тренировка дома',text:'Упражнения с весом тела строят мышцы. 3–4 подхода по 10–15 повторений каждого движения.'},
+  home:{icon:'💪',title:'Силовая тренировка дома',text:'Упражнения с весом тела строят мышцы. 3–4 подхода по 10–15 повторений каждого движения.'},
 };
 
 const QUESTS_DEF = [
   {id:'q_yoga2',ico:'🧘',name:'Гибкий путь',desc:'2 занятия йогой за неделю',type:'yoga',need:2},
   {id:'q_walk3',ico:'🚶',name:'Шаги к цели',desc:'3 тренировки на дорожке',type:'walk',need:3},
-  {id:'q_home3',ico:'🏠',name:'Домашний воин',desc:'3 домашних тренировки',type:'home',need:3},
+  {id:'q_home3',ico:'💪',name:'Домашний воин',desc:'3 домашних тренировки',type:'home',need:3},
   {id:'q_streak3',ico:'🔥',name:'Несломленный',desc:'3 дня активности подряд',type:'streak',need:3},
   {id:'q_water5',ico:'💧',name:'Гидратация',desc:'Норма воды 5 дней подряд',type:'water',need:5},
   {id:'q_all',ico:'⭐',name:'Всестороннее развитие',desc:'Попробуй все 3 типа за неделю',type:'all',need:3},
@@ -1409,7 +1429,7 @@ const ACHS_DEF = [
   {id:'a_first',ico:'🌟',name:'Первый шаг',desc:'Первая тренировка',chk:s=>s.total>=1},
   {id:'a_yoga5',ico:'🧘',name:'Йога-практик',desc:'5 занятий йогой',chk:s=>s.yoga>=5},
   {id:'a_walk5',ico:'🚶',name:'Километры силы',desc:'5 сессий на дорожке',chk:s=>s.walk>=5},
-  {id:'a_home5',ico:'🏠',name:'Домашний чемпион',desc:'5 дом. тренировок',chk:s=>s.home>=5},
+  {id:'a_home5',ico:'💪',name:'Домашний чемпион',desc:'5 дом. тренировок',chk:s=>s.home>=5},
   {id:'a_lvl3',ico:'🔱',name:'Воин',desc:'Достичь 3 уровня',chk:s=>s.level>=3},
   {id:'a_lvl5',ico:'💀',name:'Элита',desc:'Достичь 5 уровня',chk:s=>s.level>=5},
   {id:'a_streak5',ico:'🔥',name:'Неостановимый',desc:'Серия 5 дней',chk:s=>s.streak>=5},
@@ -1540,11 +1560,134 @@ function changeDur(delta){
 }
 
 /* ── EXERCISES ── */
+/* ── XP PREVIEW PER EXERCISE ── */
+function buildExXPPreview(ex){
+  var DIFF_XP = {easy:0.6, med:0.9, hard:1.2};
+  var DIFF_LABEL = {easy:'Начальный ×1.0', med:'Средний ×1.5', hard:'Продвинутый ×2.0'};
+  var exData = EXERCISES.find(function(e){ return e.name === ex.name.trim(); });
+  if(!exData) return '';
+  var xpPerRep = DIFF_XP[exData.diff] || 0.6;
+  var totalXP = 0;
+  ex.sets.forEach(function(st){
+    totalXP += (parseInt(st.reps) || 0) * xpPerRep;
+  });
+  var div = '<div style="margin-top:8px;padding:6px 10px;'
+    + 'background:rgba(124,108,255,.07);border-radius:8px;'
+    + 'display:flex;justify-content:space-between;align-items:center;">'
+    + '<span style="font-size:11px;color:var(--t3);">' + DIFF_LABEL[exData.diff] + '</span>'
+    + '<span style="font-size:13px;font-weight:700;color:var(--v3);">+'
+    + Math.round(totalXP) + ' XP</span>'
+    + '</div>';
+  return div;
+}
+
 function addExercise(){
-  const idx=exercises_.length;
   exercises_.push({name:'',sets:[{reps:'',weight:''}]});
   renderExercises();
 }
+
+function applyExerciseDefaults(ei){
+  var ex = exercises_[ei];
+  if(!ex) return;
+  var name = ex.name.trim();
+  if(!name) return;
+  var exData = EXERCISES.find(function(e){ return e.name === name; });
+  if(!exData) return;
+  // Only auto-fill if sets are still at default (1 empty set)
+  if(ex.sets.length === 1 && !ex.sets[0].reps && !ex.sets[0].weight){
+    var sets = [];
+    for(var i=0; i<exData.defaultSets; i++){
+      sets.push({reps: String(exData.defaultReps), weight:''});
+    }
+    exercises_[ei].sets = sets;
+    renderExercises();
+  }
+}
+
+/* ── EXERCISE PICKER ── */
+var _epOpen = -1;
+
+function epBuildList(ei, query) {
+  var groups = [
+    {label: 'Начальный ×1.0', diff: 'easy'},
+    {label: 'Средний ×1.5',   diff: 'med'},
+    {label: 'Продвинутый ×2.0', diff: 'hard'},
+  ];
+  var q = (query || '').trim().toLowerCase();
+  var html = '';
+  groups.forEach(function(g) {
+    var items = EXERCISES.filter(function(e) {
+      return e.diff === g.diff && (!q || e.name.toLowerCase().indexOf(q) >= 0);
+    });
+    if (!items.length) return;
+    html += '<div class="epd-grp">' + g.label + '</div>';
+    items.forEach(function(e) {
+      // Use data-name to avoid quote issues in onclick
+      html += '<div class="epd-item" data-ei="' + ei + '" data-name="'
+        + e.name.replace(/"/g, '&quot;') + '">'
+        + e.name + '</div>';
+    });
+  });
+  html += '<div class="epd-own" onclick="epClose(' + ei + ')">✏️ Написать своё</div>';
+  return html;
+}
+
+function epOpen(ei) {
+  if (_epOpen >= 0 && _epOpen !== ei) epClose(_epOpen);
+  _epOpen = ei;
+  var el = document.getElementById('epd' + ei);
+  if (!el) return;
+  el.innerHTML = epBuildList(ei, exercises_[ei] ? exercises_[ei].name : '');
+  el.style.display = 'block';
+  // Attach click handlers after render
+  el.querySelectorAll('.epd-item').forEach(function(item) {
+    item.addEventListener('mousedown', function(ev) {
+      ev.preventDefault();
+      epPick(parseInt(item.dataset.ei), item.dataset.name);
+    });
+  });
+}
+
+function epFilter(ei, query) {
+  var el = document.getElementById('epd' + ei);
+  if (!el || el.style.display === 'none') return;
+  el.innerHTML = epBuildList(ei, query);
+  el.querySelectorAll('.epd-item').forEach(function(item) {
+    item.addEventListener('mousedown', function(ev) {
+      ev.preventDefault();
+      epPick(parseInt(item.dataset.ei), item.dataset.name);
+    });
+  });
+}
+
+function epClose(ei) {
+  var el = document.getElementById('epd' + ei);
+  if (el) el.style.display = 'none';
+  if (_epOpen === ei) _epOpen = -1;
+}
+
+function epPick(ei, name) {
+  exercises_[ei].name = name;
+  epClose(ei);
+  // Auto-fill sets from exercise database
+  var exData = EXERCISES.find(function(e) { return e.name === name; });
+  if (exData) {
+    var sets = [];
+    for (var i = 0; i < exData.defaultSets; i++) {
+      sets.push({reps: String(exData.defaultReps), weight: ''});
+    }
+    exercises_[ei].sets = sets;
+  }
+  checkPR();
+  renderExercises();
+}
+
+// Close picker on outside click
+document.addEventListener('click', function(ev) {
+  if (_epOpen < 0) return;
+  var wrap = document.getElementById('epw' + _epOpen);
+  if (wrap && !wrap.contains(ev.target)) epClose(_epOpen);
+});
 
 function renderExercises(){
   const container=document.getElementById('exercisesList');
@@ -1552,9 +1695,16 @@ function renderExercises(){
   container.innerHTML=exercises_.map((ex,ei)=>`
     <div style="margin-bottom:16px;background:rgba(255,255,255,.03);border:1px solid var(--rim);border-radius:var(--r12);padding:12px;">
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
-        <input class="inp" style="flex:1;padding:10px 12px;font-size:14px;" placeholder="Упражнение (отжимания, пресс...)"
-          value="${ex.name}" oninput="exercises_[${ei}].name=this.value;checkPR()">
-        ${exercises_.length>1?`<button onclick="removeExercise(${ei})" style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:var(--r8);color:var(--rose2);padding:8px 12px;cursor:pointer;font-size:14px;">✕</button>`:''}
+        <div class="epw" id="epw${ei}">
+          <input class="inp" style="padding:10px 12px;font-size:14px;width:100%;box-sizing:border-box;"
+            placeholder="Выбери или напиши упражнение..."
+            value="${ex.name}"
+            oninput="exercises_[${ei}].name=this.value;checkPR();epFilter(${ei},this.value)"
+            onfocus="epOpen(${ei})"
+            autocomplete="off">
+          <div class="epd" id="epd${ei}" style="display:none"></div>
+        </div>
+        ${exercises_.length>1?`<button onclick="removeExercise(${ei})" style="flex-shrink:0;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:var(--r8);color:var(--rose2);padding:8px 12px;cursor:pointer;font-size:14px;">✕</button>`:''}
       </div>
       <div style="display:grid;grid-template-columns:14px 1fr 8px 1fr 28px;gap:6px;align-items:center;margin-bottom:6px;padding:0 0 4px 0;">
         <span></span>
@@ -1576,6 +1726,7 @@ function renderExercises(){
           ${ex.sets.length>1?`<div class="set-del" onclick="removeSet(${ei},${si})">✕</div>`:'<div style="width:28px"></div>'}
         </div>`).join('')}
       <button onclick="addSet(${ei})" style="width:100%;margin-top:8px;padding:8px;background:rgba(124,108,255,.08);border:1px dashed rgba(124,108,255,.25);border-radius:var(--r8);color:var(--v3);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.3px;">+ Подход</button>
+      ${buildExXPPreview(ex)}
     </div>
   `).join('');
 }
@@ -1640,19 +1791,21 @@ function logWorkout(){
     // Yoga: duration-based (30min=40xp, 60min=90xp, 90min=140xp)
     xp = Math.round(dur_ * 1.5 + 10);
   } else if(selWT_==='home'){
-    // Home: count total reps across all sets
-    let totalReps=0, totalVolume=0;
+    // XP per rep depends on difficulty:
+    // easy=0.6, med=0.9 (×1.5), hard=1.2 (×2.0)
+    // Base XP_per_rep=0.6, multiplied by diff
+    const DIFF_XP = {easy:0.6, med:0.9, hard:1.2};
+    let exXP = 0;
     exercises_.forEach(ex=>{
+      const exData = EXERCISES.find(function(e){ return e.name === ex.name.trim(); });
+      const xpPerRep = exData ? (DIFF_XP[exData.diff] || 0.6) : 0.6;
       ex.sets.forEach(st=>{
-        const r=parseInt(st.reps)||0;
-        const w=parseFloat(st.weight)||1;
-        totalReps+=r;
-        totalVolume+=r*w; // volume = reps × weight
+        const r = parseInt(st.reps) || 0;
+        exXP += r * xpPerRep;
       });
     });
-    // Base from duration + bonus from reps + bonus from volume
-    xp = Math.round(dur_ * 1.0 + totalReps * 0.5 + totalVolume * 0.03);
-    xp = Math.max(25, xp);
+    xp = Math.round(dur_ * 0.5 + exXP);
+    xp = Math.max(15, xp);
   }
 
   // Streak
@@ -2393,151 +2546,312 @@ const BODY_TIPS = [
    EXERCISES DATABASE
 ═══════════════════════════════════════ */
 const EXERCISES = [
-  // CHEST
-  {id:'push',group:'chest',icon:'🤸',name:'Отжимания',muscles:'Грудь, трицепс, плечи',diff:'easy',
-   sets:'3–4 подхода × 10–20 повт',
-   how:'Руки чуть шире плеч. Тело — прямая линия от головы до пят. Опускайся до касания грудью пола. Локти 45° от тела, не 90°.',
-   tip:'Не можешь 10 раз? Начни с колен. Слишком легко? Ноги на стул — нагрузка на верх груди.'},
-  {id:'push_wide',group:'chest',icon:'💪',name:'Широкие отжимания',muscles:'Внешняя грудь, дельты',diff:'easy',
-   sets:'3 подхода × 8–15 повт',
-   how:'Руки на 1.5× ширины плеч. Медленный спуск (2 сек), быстрый подъём. Сводишь лопатки в нижней точке.',
-   tip:'Делай после обычных отжиманий — хорошо добивает грудь.'},
-  // BACK
-  {id:'superman',group:'back',icon:'🦸',name:'Супермен',muscles:'Нижняя спина, ягодицы',diff:'easy',
-   sets:'3 подхода × 15 повт',
-   how:'Лёжа на животе, руки вперёд. Одновременно поднимай руки и ноги на 15–20 см от пола. Держи 2 сек, опускай.',
-   tip:'Отличное упражнение для осанки — ты сидишь 6–7 ч в день, это компенсирует.'},
-  {id:'row',group:'back',icon:'🏋️',name:'Тяга гантели в наклоне',muscles:'Широчайшие, бицепс, задняя дельта',diff:'med',
-   sets:'3–4 подхода × 10–12 повт',
-   how:'Одна рука и колено на скамье. Спина параллельна полу. Тяни гантель к поясу, локоть вдоль тела. Пауза вверху 1 сек.',
-   tip:'Не скручивай корпус. Думай о движении локтя, а не руки — лучше включается спина.'},
-  {id:'pullover',group:'back',icon:'🔄',name:'Пуловер с гантелей',muscles:'Широчайшие, грудь, трицепс',diff:'med',
-   sets:'3 подхода × 12 повт',
-   how:'Лёжа на скамье поперёк. Гантель двумя руками над грудью. Плавно опускай за голову — чуть ниже уровня головы. Возвращай через дугу.',
-   tip:'Контролируй вес — растяжение широчайших при опускании должно чувствоваться.'},
-  // LEGS
-  {id:'squat',group:'legs',icon:'🦵',name:'Приседания',muscles:'Квадрицепс, ягодицы, бицепс бедра',diff:'easy',
-   sets:'3–4 подхода × 15–20 повт',
-   how:'Ноги чуть шире плеч, носки слегка в стороны. Опускайся как на стул — бёдра параллельны полу. Колени над носками, спина прямая.',
-   tip:'Пята не должна отрываться. Если отрывается — работай над гибкостью голеностопа.'},
-  {id:'lunge',group:'dumbbell',icon:'🚶',name:'Выпады с гантелями',muscles:'Квадрицепс, ягодицы, стабилизаторы',diff:'med',
-   sets:'3 подхода × 10 повт каждой ногой',
-   how:'Шаг вперёд, опусти заднее колено почти до пола. Переднее колено над щиколоткой. Оттолкнись пяткой, вернись назад.',
-   tip:'Держи корпус вертикально — не наклоняйся вперёд. Гантели в руках увеличат нагрузку.'},
-  {id:'glute_bridge',group:'legs',icon:'🍑',name:'Ягодичный мостик',muscles:'Ягодицы, бицепс бедра',diff:'easy',
-   sets:'3–4 подхода × 20 повт',
-   how:'Лёжа на спине, колени согнуты. Поднимай таз до прямой линии плечи–колени. Сожми ягодицы вверху, держи 2 сек.',
-   tip:'Хочешь сложнее? Положи гантель на бёдра или поставь одну ногу на стул.'},
-  // ARMS
-  {id:'curl',group:'arms',icon:'💪',name:'Сгибание рук с гантелями',muscles:'Бицепс',diff:'easy',
-   sets:'3 подхода × 12–15 повт',
-   how:'Стоя, гантели вдоль тела. Сгибай руки поочерёдно или вместе. Локоть неподвижен у корпуса. Вверху — поворот кисти наружу.',
-   tip:'Не раскачивай корпус. Медленное опускание (3 сек) даёт больше роста бицепса.'},
-  {id:'tricep_ext',group:'arms',icon:'🔱',name:'Разгибание над головой',muscles:'Трицепс',diff:'med',
-   sets:'3 подхода × 12 повт',
-   how:'Стоя или сидя, гантель двумя руками над головой. Согни локти — гантель за голову. Разгибай вверх. Локти смотрят в потолок.',
-   tip:'Трицепс — 2/3 объёма руки. Это упражнение лучше растит руки, чем бицепс-кёрл.'},
-  {id:'hammer',group:'arms',icon:'🔨',name:'Молотковые сгибания',muscles:'Бицепс, брахиалис, предплечье',diff:'easy',
-   sets:'3 подхода × 12 повт',
-   how:'Как обычный кёрл, но ладони смотрят друг на друга (нейтральный хват). Движение строго вертикальное.',
-   tip:'Включает брахиалис под бицепсом — визуально делает руки шире.'},
-  // CORE
-  {id:'plank',group:'core',icon:'🏋️',name:'Планка',muscles:'Весь кор, плечи, ягодицы',diff:'easy',
-   sets:'3–4 подхода × 30–60 сек',
-   how:'Упор на предплечья или руки. Тело прямое — не поднимай таз, не проваливай поясницу. Смотри в пол. Дыши ровно.',
-   tip:'Напрягай пресс и ягодицы одновременно — так поясница не устаёт, а кор работает сильнее.'},
-  {id:'crunch',group:'core',icon:'🌀',name:'Скручивания',muscles:'Верхний пресс',diff:'easy',
-   sets:'3 подхода × 15–20 повт',
-   how:'Лёжа на спине, колени согнуты. Руки у висков. Поднимай только лопатки, не весь корпус. Выдох в точке сжатия.',
-   tip:'Не тяни за шею руками. Фокусируйся на сжатии пресса — не на высоте подъёма.'},
-  {id:'leg_raise',group:'core',icon:'🦵',name:'Подъём ног лёжа',muscles:'Нижний пресс, сгибатели бедра',diff:'med',
-   sets:'3 подхода × 12–15 повт',
-   how:'Лёжа на спине, руки под ягодицами. Ноги прямые. Поднимай до 90°, медленно опускай — не касаясь пола.',
-   tip:'Поясница прижата к полу во всё время. Если отрывается — согни колени немного.'},
-  {id:'oblique',group:'core',icon:'🔄',name:'Велосипед',muscles:'Косые мышцы пресса',diff:'easy',
-   sets:'3 подхода × 20 повт (по 10 на сторону)',
-   how:'Лёжа на спине, руки у висков. Поочерёдно тяни локоть к противоположному колену. Другая нога вытянута.',
-   tip:'Медленнее = эффективнее. Скорость — враг техники в этом упражнении.'},
-  // YOGA
-  {id:'downdog',group:'yoga',icon:'🐕',name:'Собака мордой вниз',muscles:'Задняя поверхность бедра, плечи, спина',diff:'easy',
-   sets:'5 вдохов-выдохов × 3–5 раз',
-   how:'Из планки подними таз вверх и назад — тело в форме перевёрнутой V. Пятки тянутся к полу. Спина прямая.',
-   tip:'Пятки не обязаны касаться пола — особенно в начале. Сгибай колени если нужно.'},
-  {id:'warrior',group:'yoga',icon:'⚔️',name:'Воин I',muscles:'Бёдра, пах, грудь, плечи',diff:'easy',
-   sets:'5 вдохов × каждая сторона',
-   how:'Из выпада поверни заднюю стопу на 45°. Выпрями корпус, руки вверх. Согни переднее колено до 90°.',
-   tip:'Бёдра смотрят вперёд. Задняя нога — опора. Вытягивайся вверх через макушку.'},
-  {id:'child',group:'yoga',icon:'🧘',name:'Поза ребёнка',muscles:'Нижняя спина, бёдра, голени',diff:'easy',
-   sets:'1–2 мин, 2–3 раза',
-   how:'Сядь на пятки, наклонись вперёд, вытяни руки. Лоб к полу. Дыши глубоко — на выдохе расслабляй поясницу.',
-   tip:'Лучшее упражнение после долгого сидения. Делай каждый день — 2 минуты снимают напряжение поясницы.'},
-  {id:'cat_cow',group:'yoga',icon:'🐄',name:'Кошка-корова',muscles:'Позвоночник, шея, пресс',diff:'easy',
-   sets:'10 циклов утром',
-   how:'На четвереньках. Вдох — прогни поясницу вниз, грудь вперёд (корова). Выдох — округли спину вверх (кошка).',
-   tip:'Идеально для разминки и для твоей осанки после сидячей работы.'},
-  // CARDIO
-  {id:'jumping',group:'cardio',icon:'⬆️',name:'Прыжки на месте',muscles:'Всё тело, сердечно-сосудистая',diff:'easy',
-   sets:'4 × 30 сек с отдыхом 30 сек',
-   how:'Прыгай с разведением рук и ног одновременно. Приземляйся мягко на носки. Держи темп.',
-   tip:'Заменяет 5 мин бега по интенсивности. Хорошо разогревает перед тренировкой.'},
-  {id:'mountain',group:'cardio',icon:'⛰️',name:'Бег в гору (планка)',muscles:'Пресс, плечи, сгибатели бедра',diff:'med',
-   sets:'4 × 20 повт каждой ногой',
-   how:'Из планки поочерёдно тяни колени к груди в быстром темпе. Таз не поднимать.',
-   tip:'Высокоинтенсивное упражнение — отлично для жиросжигания в коротких тренировках.'},
 
-  // ── DUMBBELL 5KG ──
-  {id:'db_lateral',group:'dumbbell',icon:'↔️',name:'Разведение в стороны',muscles:'Средняя дельта, плечи',diff:'easy',
+  // ════ CHEST / ГРУДЬ ════
+  {id:'push',         group:'chest',    icon:'🤸', name:'Отжимания',
+   muscles:'Грудь, трицепс, плечи', diff:'easy', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт',
+   how:'Руки чуть шире плеч. Тело — прямая линия. Опускайся до касания грудью пола. Локти 45° от тела.',
+   tip:'Не можешь 10? Начни с колен. Слишком легко? Ноги на стул.'},
+  {id:'push_wide',    group:'chest',    icon:'💪', name:'Широкие отжимания',
+   muscles:'Внешняя грудь, дельты', diff:'easy', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт',
+   how:'Руки на 1.5× ширины плеч. Медленный спуск 2 сек, быстрый подъём.',
+   tip:'Делай после обычных отжиманий — хорошо добивает внешнюю грудь.'},
+  {id:'db_press',     group:'chest',    icon:'🏋️', name:'Жим лёжа с гантелью',
+   muscles:'Грудь, трицепс, передняя дельта', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа, гантели на уровне груди, локти 45°. Жим вверх до выпрямления, медленно опускай.',
+   tip:'На полу — безопасно и нагружает нижнюю часть грудных.'},
+  {id:'db_fly',       group:'chest',    icon:'🦋', name:'Разводка лёжа',
+   muscles:'Средняя грудь', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа, гантели над грудью. Разводи дугой — как обнимаешь дерево. Лёгкий изгиб в локтях.',
+   tip:'Растягивает грудные в полной амплитуде. Делай после жима.'},
+  {id:'push_diamond', group:'chest',    icon:'💎', name:'Алмазные отжимания',
+   muscles:'Трицепс, внутренняя грудь', diff:'hard', defaultSets:3, defaultReps:8,
+   sets:'3 × 8 повт',
+   how:'Руки сложи ромбом под грудью. Локти идут строго назад вдоль тела. Полная амплитуда.',
+   tip:'Одно из лучших упражнений для трицепса без снаряжения. Не спеши — техника важнее.'},
+  {id:'db_fly_floor',  group:'chest',    icon:'🦋', name:'Разводка лёжа на полу',
+   muscles:'Средняя грудь, растяжка', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа на полу. Гантель в одной руке вытянута вверх. Медленно опускай в сторону по дуге до касания пола. Возвращай через ту же дугу.',
+   tip:'Представь что обнимаешь дерево — именно такая дуга максимально нагружает грудь.'},
+  {id:'db_incline',    group:'chest',    icon:'📐', name:'Жим под наклоном',
+   muscles:'Верхняя грудь, передняя дельта', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Подложи подушку под спину (30–45°). Гантели на уровне груди. Жми под углом вверх-вперёд, локти 45°.',
+   tip:'Верхняя грудь — слабое место большинства. Этот угол прицельно её нагружает.'},
+  {id:'db_pullover_ch',group:'chest',    icon:'🔄', name:'Пуловер для груди',
+   muscles:'Нижняя грудь, широчайшие', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа, гантель двумя руками над грудью. Опускай за голову по дуге. При подъёме думай как грудь тянет руки назад.',
+   tip:'Чтобы акцент на грудь — при подъёме веди через грудные, а не через трицепс.'},
+  {id:'db_squeeze',    group:'chest',    icon:'🤜', name:'Сведение у груди стоя',
+   muscles:'Внутренняя грудь', diff:'easy', defaultSets:3, defaultReps:15,
    sets:'3 × 15 повт',
-   how:'Стоя, гантели по бокам. Поднимай руки в стороны до уровня плеч — не выше. Лёгкий изгиб в локтях. Медленно опускай.',
-   tip:'5 кг — идеальный вес для боковых разведений. Не читингуй корпусом — это убивает нагрузку на дельту.'},
-  {id:'db_front',group:'dumbbell',icon:'⬆️',name:'Подъём гантели перед собой',muscles:'Передняя дельта',diff:'easy',
-   sets:'3 × 12 повт каждой рукой',
-   how:'По очереди поднимай руку прямо перед собой до уровня плеч. Ладонь смотрит вниз. Контролируй опускание.',
-   tip:'Хорошо дополняет разведения — вместе прокачивают всю дельту. Делай в суперсете.'},
-  {id:'db_shrug',group:'dumbbell',icon:'🤷',name:'Шраги с гантелью',muscles:'Трапеция, шея',diff:'easy',
+   how:'Держи гантель горизонтально двумя руками. Давли ладонями на оба конца. Медленно жми вперёд и возвращай.',
+   tip:'Изометрическое давление формирует линию посередине груди. Делай в конце тренировки.'},
+
+  // ════ BACK / СПИНА ════
+  {id:'superman',     group:'back',     icon:'🦸', name:'Супермен',
+   muscles:'Нижняя спина, ягодицы', diff:'easy', defaultSets:3, defaultReps:15,
+   sets:'3 × 15 повт',
+   how:'Лёжа на животе, руки вперёд. Поднимай руки и ноги одновременно на 15 см. Держи 2 сек.',
+   tip:'Критично для осанки при сидячей работе. Делай каждую тренировку.'},
+  {id:'db_row_both',  group:'back',     icon:'⚓', name:'Тяга к поясу стоя',
+   muscles:'Широчайшие, бицепс, задняя дельта', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантель двумя руками. Тяни к животу — локти назад и вверх. Лопатки сводятся.',
+   tip:'Почувствуй как работают лопатки — это важнее веса снаряда.'},
+  {id:'row',          group:'back',     icon:'🏋️', name:'Тяга гантели в наклоне',
+   muscles:'Широчайшие, бицепс, задняя дельта', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Одна рука на скамье. Спина параллельна полу. Тяни к поясу, локоть вдоль тела. Пауза вверху.',
+   tip:'Не скручивай корпус. Думай о движении локтя — так лучше включается спина.'},
+  {id:'db_bent_raise',group:'back',     icon:'🦅', name:'Разведение в наклоне',
+   muscles:'Задняя дельта, ромбовидные', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантели свисают. Разводи руки в стороны как крылья. Лопатки сводятся вверху.',
+   tip:'Исправляет сутулость. Очень важно для тех кто сидит 6-7 часов в день.'},
+  {id:'pullover',     group:'back',     icon:'🔄', name:'Пуловер с гантелей',
+   muscles:'Широчайшие, грудь, трицепс', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа поперёк. Гантель двумя руками над грудью. Плавно за голову и обратно через дугу.',
+   tip:'Контролируй — растяжение широчайших при опускании должно чувствоваться.'},
+  {id:'renegade_row', group:'back',     icon:'⚡', name:'Тяга в планке',
+   muscles:'Спина, кор, плечи', diff:'hard', defaultSets:3, defaultReps:6,
+   sets:'3 × 6 повт на руку',
+   how:'Планка на гантелях. Поочерёдно тяни к поясу — не поворачивай корпус. Кор напряжён всё время.',
+   tip:'Тренирует спину и стабилизаторы кора одновременно. Очень тяжело — начни без веса.'},
+
+  // ════ LEGS / НОГИ ════
+  {id:'squat',        group:'legs',     icon:'🦵', name:'Приседания',
+   muscles:'Квадрицепс, ягодицы, бицепс бедра', diff:'easy', defaultSets:3, defaultReps:15,
+   sets:'3 × 15 повт',
+   how:'Ноги чуть шире плеч, носки в стороны. Бёдра параллельны полу. Колени над носками, спина прямая.',
+   tip:'Пятка не отрывается. Если отрывается — работай над гибкостью голеностопа.'},
+  {id:'glute_bridge', group:'legs',     icon:'🍑', name:'Ягодичный мостик',
+   muscles:'Ягодицы, бицепс бедра', diff:'easy', defaultSets:3, defaultReps:20,
    sets:'3 × 20 повт',
-   how:'Гантель в одной руке, подними плечо максимально вверх — как бы говоришь «не знаю». Медленно опускай.',
-   tip:'Трапеция важна для осанки — особенно при сидячей работе. Делай обеими руками поочерёдно.'},
-  {id:'db_bent_raise',group:'dumbbell',icon:'🦅',name:'Разведение в наклоне',muscles:'Задняя дельта, ромбовидные',diff:'med',
-   sets:'3 × 12 повт',
-   how:'Наклон 45°, гантели свисают вниз. Разводи руки в стороны — как крылья. Лопатки сводятся в верхней точке.',
-   tip:'Исправляет сутулость лучше многих упражнений. Очень важно для учителя с сидячей работой.'},
-  {id:'db_goblet',group:'dumbbell',icon:'🏆',name:'Гоблет-приседание',muscles:'Квадрицепс, ягодицы, кор',diff:'easy',
+   how:'Лёжа, колени согнуты. Поднимай таз до линии плечи–колени. Сожми ягодицы вверху, держи 2 сек.',
+   tip:'Положи гантель на бёдра для утяжеления.'},
+  {id:'db_goblet',    group:'legs',     icon:'🏆', name:'Гоблет-приседание',
+   muscles:'Квадрицепс, ягодицы, кор', diff:'easy', defaultSets:3, defaultReps:15,
    sets:'3 × 15 повт',
-   how:'Держи гантель вертикально двумя руками у груди. Приседай глубоко, локти между коленями в нижней точке.',
-   tip:'Гантель у груди автоматически выпрямляет спину. Лучший вариант приседа без тренажёра.'},
-  {id:'db_rdl',group:'dumbbell',icon:'🦿',name:'Румынская тяга',muscles:'Бицепс бедра, ягодицы, нижняя спина',diff:'med',
+   how:'Гантель вертикально у груди. Приседай глубоко, локти между коленями внизу.',
+   tip:'Гантель у груди выпрямляет спину автоматически. Лучший вариант приседа дома.'},
+  {id:'lunge',        group:'legs',     icon:'🚶', name:'Выпады',
+   muscles:'Квадрицепс, ягодицы, стабилизаторы', diff:'med', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт на ногу',
+   how:'Шаг вперёд, заднее колено почти до пола. Переднее колено над щиколоткой. Оттолкнись пяткой.',
+   tip:'Держи корпус вертикально. С гантелью в руках нагрузка растёт.'},
+  {id:'db_rdl',       group:'legs',     icon:'🦿', name:'Румынская тяга',
+   muscles:'Бицепс бедра, ягодицы, нижняя спина', diff:'med', defaultSets:3, defaultReps:12,
    sets:'3 × 12 повт',
-   how:'Гантель в одной руке. Наклон вперёд с прямой спиной — гантель вдоль ноги. Чувствуй растяжение бицепса бедра. Встань через таз.',
-   tip:'Одна из лучших связок упражнений для задней поверхности бедра. 5 кг достаточно для изучения техники.'},
-  {id:'db_press',group:'dumbbell',icon:'🏋️',name:'Жим лёжа с гантелью',muscles:'Грудь, трицепс, передняя дельта',diff:'easy',
+   how:'Гантель в руке. Наклон вперёд с прямой спиной — гантель вдоль ноги. Чувствуй растяжение. Встань через таз.',
+   tip:'Чувствуй растяжение бицепса бедра при наклоне — это важнее глубины.'},
+  {id:'db_lunge_walk',group:'legs',     icon:'🏃', name:'Ходящие выпады',
+   muscles:'Квадрицепс, ягодицы, баланс', diff:'med', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 шагов на ногу',
+   how:'Гантель в руках. Шагай выпадами вперёд чередуя ноги. Корпус вертикален.',
+   tip:'Начни без гантели. Сложнее обычных выпадов — требует координации.'},
+  {id:'pistol_assist',group:'legs',     icon:'🎯', name:'Приседание на одной ноге',
+   muscles:'Квадрицепс, ягодицы, баланс', diff:'hard', defaultSets:3, defaultReps:6,
+   sets:'3 × 6 повт на ногу',
+   how:'Держись за стул. Одна нога поднята вперёд. Медленно приседай на другой — как можно глубже.',
+   tip:'Путь к пистолету. Уменьшай помощь опоры по мере прогресса.'},
+
+  // ════ ARMS / РУКИ ════
+  {id:'curl',         group:'arms',     icon:'💪', name:'Сгибание рук с гантелью',
+   muscles:'Бицепс', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Гантели вдоль тела. Сгибай поочерёдно. Локоть неподвижен у корпуса. Поворот кисти наружу вверху.',
+   tip:'Медленное опускание 3 сек = больше роста. Не раскачивай корпус.'},
+  {id:'hammer',       group:'arms',     icon:'🔨', name:'Молотковые сгибания',
+   muscles:'Бицепс, брахиалис, предплечье', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Как бицепс-кёрл, но ладони смотрят друг на друга. Движение строго вертикальное.',
+   tip:'Включает брахиалис под бицепсом — визуально делает руки шире.'},
+  {id:'db_lateral',   group:'arms',     icon:'↔️', name:'Разведение в стороны',
+   muscles:'Средняя дельта, плечи', diff:'easy', defaultSets:3, defaultReps:15,
    sets:'3 × 15 повт',
-   how:'Лёжа на полу или скамье. Гантели на уровне груди, локти 45°. Жим вверх до выпрямления рук, опусти медленно.',
-   tip:'На полу — более безопасно и нагружает нижнюю часть грудных. Хорошая альтернатива штанге.'},
-  {id:'db_fly',group:'dumbbell',icon:'🦋',name:'Разводка лёжа',muscles:'Внутренняя и средняя грудь',diff:'med',
-   sets:'3 × 12 повт',
-   how:'Лёжа, гантели над грудью прямыми руками. Разводи широкой дугой — как обнимаешь дерево. Лёгкий изгиб в локтях.',
-   tip:'Растягивает грудные мышцы в полной амплитуде. Делай после жима — лучше прочувствуешь работу груди.'},
-  {id:'db_row_both',group:'dumbbell',icon:'⚓',name:'Тяга к поясу стоя',muscles:'Широчайшие, бицепс, задняя дельта',diff:'easy',
-   sets:'3 × 12 повт',
-   how:'Наклон 45°, гантель в двух руках. Тяни к животу — локти назад и вверх. Лопатки сводятся.',
-   tip:'5 кг позволяет сосредоточиться на технике. Почувствуй как работают лопатки — это важнее веса.'},
-  {id:'db_curl_conc',group:'dumbbell',icon:'💡',name:'Концентрированное сгибание',muscles:'Пик бицепса',diff:'easy',
-   sets:'3 × 10 повт каждой рукой',
-   how:'Сидя, локоть упирается в колено. Медленно сгибай и разгибай. Полная амплитуда, пауза вверху 2 сек.',
-   tip:'Изолирует бицепс лучше всех упражнений. Медленный темп с 5 кг даёт больше роста, чем быстрый с 10.'},
-  {id:'db_kickback',group:'dumbbell',icon:'🦵',name:'Отведение гантели назад',muscles:'Трицепс (длинная головка)',diff:'easy',
-   sets:'3 × 12 повт каждой рукой',
+   how:'Поднимай руки в стороны до уровня плеч. Лёгкий изгиб в локтях. Медленно опускай.',
+   tip:'5 кг — идеальный вес. Не читингуй корпусом.'},
+  {id:'db_front',     group:'arms',     icon:'⬆️', name:'Подъём гантели перед собой',
+   muscles:'Передняя дельта', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт на руку',
+   how:'По очереди поднимай руку прямо до уровня плеч. Ладонь вниз. Контролируй опускание.',
+   tip:'Вместе с разведениями прокачивает всю дельту. Делай в суперсете.'},
+  {id:'db_kickback',  group:'arms',     icon:'🦵', name:'Отведение назад (трицепс)',
+   muscles:'Трицепс (длинная головка)', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт на руку',
    how:'Наклон, рука согнута у корпуса. Разгибай назад до полного выпрямления. Локоть неподвижен.',
-   tip:'Чувствуешь жжение? Хорошо. Именно такое жжение говорит что трицепс работает правильно.'},
-  {id:'db_oblique_bend',group:'dumbbell',icon:'〽️',name:'Наклоны в стороны с гантелью',muscles:'Косые мышцы пресса, боковые',diff:'easy',
-   sets:'3 × 15 повт каждую сторону',
-   how:'Гантель в одной руке. Наклоняйся вбок — гантель скользит вдоль бедра вниз. Без поворота корпуса.',
-   tip:'Укрепляет боковые мышцы кора. Не используй инерцию — движение должно быть медленным.'},
-  {id:'db_lunge_walk',group:'dumbbell',icon:'🚶',name:'Ходящие выпады',muscles:'Квадрицепс, ягодицы, равновесие',diff:'med',
-   sets:'3 × 10 шагов каждой ногой',
-   how:'Гантель в каждой руке (или одна для начала). Шагай выпадами вперёд — чередуй ноги. Сохраняй вертикальный корпус.',
-   tip:'Лучше обычных выпадов для баланса и координации. Начни без гантели, потом добавляй.'},
+   tip:'Жжение в трицепсе = упражнение работает правильно.'},
+  {id:'db_curl_conc', group:'arms',     icon:'💡', name:'Концентрированное сгибание',
+   muscles:'Пик бицепса', diff:'easy', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт на руку',
+   how:'Сидя, локоть на колене. Медленно сгибай. Пауза вверху 2 сек.',
+   tip:'Лучшая изоляция бицепса. Медленный темп с 5 кг лучше быстрого с 10.'},
+  {id:'tricep_ext',   group:'arms',     icon:'🔱', name:'Разгибание над головой',
+   muscles:'Трицепс', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Гантель двумя руками над головой. Согни локти — гантель за голову. Разгибай вверх. Локти в потолок.',
+   tip:'Трицепс — 2/3 объёма руки. Это упражнение растит руки лучше бицепс-кёрла.'},
+  {id:'db_shrug',     group:'arms',     icon:'🤷', name:'Шраги с гантелью',
+   muscles:'Трапеция, шея', diff:'easy', defaultSets:3, defaultReps:20,
+   sets:'3 × 20 повт',
+   how:'Гантель в руке. Подними плечо максимально вверх. Медленно опускай.',
+   tip:'Трапеция важна для осанки — особенно при сидячей работе.'},
+  {id:'arnold_press', group:'arms',     icon:'👑', name:'Жим Арнольда',
+   muscles:'Все три пучка дельты', diff:'hard', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт',
+   how:'Гантели у лица ладонями к себе. Жми вверх разворачивая ладони наружу. Вверху — ладони от тебя.',
+   tip:'Включает все три пучка дельты за одно движение. Один из лучших для плеч.'},
+
+  // ════ CORE / ПРЕСС ════
+  {id:'plank',        group:'core',     icon:'🏋️', name:'Планка',
+   muscles:'Весь кор, плечи, ягодицы', diff:'easy', defaultSets:3, defaultReps:30,
+   sets:'3 × 30 сек',
+   how:'Упор на предплечья. Тело прямое — таз не поднимать, поясницу не прогибать. Дыши ровно.',
+   tip:'Напрягай пресс и ягодицы одновременно — так поясница не устаёт.'},
+  {id:'crunch',       group:'core',     icon:'🌀', name:'Скручивания',
+   muscles:'Верхний пресс', diff:'easy', defaultSets:3, defaultReps:15,
+   sets:'3 × 15 повт',
+   how:'Лёжа, руки у висков. Поднимай только лопатки. Выдох в точке сжатия.',
+   tip:'Не тяни за шею. Фокус на сжатии пресса.'},
+  {id:'oblique',      group:'core',     icon:'🔄', name:'Велосипед',
+   muscles:'Косые мышцы пресса', diff:'easy', defaultSets:3, defaultReps:20,
+   sets:'3 × 20 повт (по 10 на сторону)',
+   how:'Лёжа, поочерёдно тяни локоть к противоположному колену. Другая нога вытянута.',
+   tip:'Медленнее = эффективнее. Скорость — враг техники.'},
+  {id:'db_oblique_bend',group:'core',   icon:'〽️', name:'Наклоны с гантелью',
+   muscles:'Косые мышцы, боковые', diff:'easy', defaultSets:3, defaultReps:15,
+   sets:'3 × 15 повт на сторону',
+   how:'Гантель в одной руке. Наклоняйся вбок вдоль бедра. Без поворота корпуса.',
+   tip:'Медленное движение. Не используй инерцию.'},
+  {id:'leg_raise',    group:'core',     icon:'🦵', name:'Подъём ног лёжа',
+   muscles:'Нижний пресс, сгибатели бедра', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа, руки под ягодицами. Ноги прямые. Поднимай до 90°, медленно опускай — не касаясь пола.',
+   tip:'Поясница прижата к полу всё время. Если отрывается — согни колени.'},
+  {id:'plank_side',   group:'core',     icon:'📐', name:'Боковая планка',
+   muscles:'Косые мышцы, кор', diff:'med', defaultSets:3, defaultReps:20,
+   sets:'3 × 20 сек на сторону',
+   how:'Упор на предплечье боком. Тело — прямая линия. Таз не проваливай.',
+   tip:'Лучшее упражнение для косых. Прогресс: сначала на предплечье, потом на ладони.'},
+  {id:'dragon_flag',  group:'core',     icon:'🐉', name:'Флаг дракона',
+   muscles:'Весь кор, нижний пресс', diff:'hard', defaultSets:3, defaultReps:5,
+   sets:'3 × 5 повт',
+   how:'Лёжа, держись за что-то за головой. Поднимай всё тело прямо от плеч. Медленно опускай — не касаясь.',
+   tip:'Одно из сложнейших упражнений на пресс. Начни с согнутыми коленями.'},
+
+  // ════ YOGA / ЙОГА ════
+  {id:'cat_cow',      group:'yoga',     icon:'🐄', name:'Кошка-корова',
+   muscles:'Позвоночник, шея, пресс', diff:'easy', defaultSets:2, defaultReps:10,
+   sets:'2 × 10 циклов',
+   how:'На четвереньках. Вдох — прогни поясницу (корова). Выдох — округли спину (кошка).',
+   tip:'Идеально для разминки и осанки после сидячей работы.'},
+  {id:'child',        group:'yoga',     icon:'🧘', name:'Поза ребёнка',
+   muscles:'Нижняя спина, бёдра, голени', diff:'easy', defaultSets:2, defaultReps:60,
+   sets:'2 × 1 мин',
+   how:'Сядь на пятки, наклонись вперёд, вытяни руки. Лоб к полу. На выдохе расслабляй поясницу.',
+   tip:'2 минуты снимают напряжение поясницы после долгого сидения.'},
+  {id:'downdog',      group:'yoga',     icon:'🐕', name:'Собака мордой вниз',
+   muscles:'Задняя поверхность бедра, плечи, спина', diff:'easy', defaultSets:3, defaultReps:5,
+   sets:'3 × 5 вдохов',
+   how:'Из планки подними таз вверх — форма V. Пятки к полу. Спина прямая.',
+   tip:'Пятки не обязаны касаться пола поначалу. Сгибай колени если нужно.'},
+  {id:'warrior',      group:'yoga',     icon:'⚔️', name:'Воин I',
+   muscles:'Бёдра, пах, грудь, плечи', diff:'easy', defaultSets:2, defaultReps:5,
+   sets:'2 × 5 вдохов на сторону',
+   how:'Из выпада поверни заднюю стопу на 45°. Выпрями корпус, руки вверх. Согни переднее колено до 90°.',
+   tip:'Бёдра смотрят вперёд. Вытягивайся вверх через макушку.'},
+  {id:'bridge_yoga',  group:'yoga',     icon:'🌉', name:'Мост',
+   muscles:'Спина, ягодицы, грудь', diff:'med', defaultSets:3, defaultReps:30,
+   sets:'3 × 30 сек',
+   how:'Лёжа на спине, ноги согнуты. Поднимай таз и грудь вверх. Руки вдоль тела.',
+   tip:'Открывает грудь и укрепляет спину. Отличная компенсация после сидячего дня.'},
+  {id:'pigeon',       group:'yoga',     icon:'🕊️', name:'Поза голубя',
+   muscles:'Ягодицы, пах, сгибатели бедра', diff:'hard', defaultSets:2, defaultReps:60,
+   sets:'2 × 1 мин на сторону',
+   how:'Одна нога согнута перед собой, другая вытянута назад. Наклонись вперёд над согнутой ногой.',
+   tip:'Глубокая растяжка ягодиц. Не форсируй — это придёт со временем.'},
+
+  // ════ CARDIO / КАРДИО ════
+  {id:'jumping',      group:'cardio',   icon:'⬆️', name:'Прыжки на месте',
+   muscles:'Всё тело, сердечно-сосудистая', diff:'easy', defaultSets:4, defaultReps:20,
+   sets:'4 × 20 повт',
+   how:'Прыгай с разведением рук и ног. Приземляйся мягко на носки.',
+   tip:'Заменяет 5 мин бега по интенсивности. Хорошо разогревает.'},
+  {id:'mountain',     group:'cardio',   icon:'⛰️', name:'Бег в планке',
+   muscles:'Пресс, плечи, сгибатели бедра', diff:'med', defaultSets:4, defaultReps:20,
+   sets:'4 × 20 повт на ногу',
+   how:'Из планки поочерёдно тяни колени к груди быстро. Таз не поднимать.',
+   tip:'Отлично для жиросжигания в коротких тренировках.'},
+  {id:'burpee',       group:'cardio',   icon:'💥', name:'Бёрпи',
+   muscles:'Всё тело, ССС', diff:'hard', defaultSets:3, defaultReps:8,
+   sets:'3 × 8 повт',
+   how:'Присед → упор лёжа → отжимание → прыжок с руками вверх. Без пауз.',
+   tip:'Сжигает ~10 ккал в минуту. Начни с 5 повторений.'},
+
+  // ════ DUMBBELL 5KG ════
+  {id:'db_press_d',   group:'dumbbell', icon:'🏋️', name:'Жим с гантелью (дом)',
+   muscles:'Грудь, трицепс, дельта', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа на полу. Локти 45°. Жим вверх, медленно опускай.',
+   tip:'На полу безопасно и эффективно.'},
+  {id:'db_row_d',     group:'dumbbell', icon:'⚓', name:'Тяга к поясу (гантель)',
+   muscles:'Широчайшие, бицепс, задняя дельта', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантель двумя руками. Тяни к животу. Лопатки сводятся.',
+   tip:'Чувствуй лопатки — это важнее веса.'},
+  {id:'db_fly_d',     group:'dumbbell', icon:'🦋', name:'Разводка (гантель)',
+   muscles:'Средняя грудь', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Лёжа, гантели над грудью. Разводи широкой дугой. Лёгкий изгиб в локтях.',
+   tip:'Делай после жима — лучше прочувствуешь грудь.'},
+  {id:'db_rdl_d',     group:'dumbbell', icon:'🦿', name:'Румынская тяга (гантель)',
+   muscles:'Бицепс бедра, ягодицы', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Гантель в руке. Наклон вперёд с прямой спиной вдоль ноги. Встань через таз.',
+   tip:'5 кг достаточно для изучения техники.'},
+  {id:'db_lunge_d',   group:'dumbbell', icon:'🚶', name:'Ходящие выпады (гантель)',
+   muscles:'Квадрицепс, ягодицы, баланс', diff:'med', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 шагов на ногу',
+   how:'Гантель в руках. Шагай выпадами вперёд чередуя ноги.',
+   tip:'Начни без гантели, потом добавляй.'},
+  {id:'db_shrug_d',   group:'dumbbell', icon:'🤷', name:'Шраги (гантель)',
+   muscles:'Трапеция, шея', diff:'easy', defaultSets:3, defaultReps:20,
+   sets:'3 × 20 повт',
+   how:'Подними плечо максимально вверх. Медленно опускай. Поочерёдно.',
+   tip:'Важно для осанки при сидячей работе.'},
+  {id:'db_bent_d',    group:'dumbbell', icon:'🦅', name:'Разведение в наклоне (гантель)',
+   muscles:'Задняя дельта, ромбовидные', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Наклон 45°, гантели свисают. Разводи как крылья. Лопатки сводятся.',
+   tip:'Исправляет сутулость — важно при сидячей работе.'},
+  {id:'db_goblet_d',  group:'dumbbell', icon:'🏆', name:'Гоблет-приседание (гантель)',
+   muscles:'Квадрицепс, ягодицы, кор', diff:'easy', defaultSets:3, defaultReps:15,
+   sets:'3 × 15 повт',
+   how:'Гантель вертикально у груди. Приседай глубоко, локти между коленями.',
+   tip:'Лучший домашний присед — спина прямая автоматически.'},
+  {id:'db_curl_d',    group:'dumbbell', icon:'💪', name:'Бицепс-кёрл (гантель)',
+   muscles:'Бицепс', diff:'easy', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Локоть у корпуса неподвижен. Сгибай поочерёдно. Поворот кисти наружу вверху.',
+   tip:'Медленное опускание 3 сек = больше роста.'},
+  {id:'db_tricep_d',  group:'dumbbell', icon:'🔱', name:'Трицепс над головой (гантель)',
+   muscles:'Трицепс', diff:'med', defaultSets:3, defaultReps:12,
+   sets:'3 × 12 повт',
+   how:'Гантель двумя руками над головой. Согни локти — гантель за голову. Разгибай вверх.',
+   tip:'Трицепс — 2/3 объёма руки. Важнее бицепса для объёма.'},
+  {id:'arnold_d',     group:'dumbbell', icon:'👑', name:'Жим Арнольда (гантель)',
+   muscles:'Все пучки дельты', diff:'hard', defaultSets:3, defaultReps:10,
+   sets:'3 × 10 повт',
+   how:'Гантели у лица ладонями к себе. Жми вверх разворачивая ладони наружу.',
+   tip:'Лучшее упражнение для полного развития плеч.'},
 ];
 
 let exFilter_ = 'all';
@@ -2658,7 +2972,7 @@ function checkWaterWarning(total) {
           <span class="day-type-ico">🚶</span><span class="day-type-lbl">Дорожка</span>
         </div>
         <div class="day-type-btn" id="dyt-home" onclick="selDayType('home')">
-          <span class="day-type-ico">🏠</span><span class="day-type-lbl">Дома</span>
+          <span class="day-type-ico">💪</span><span class="day-type-lbl">Силовые</span>
         </div>
       </div>
       <div class="label" style="margin-bottom:8px;">Длительность (мин)</div>
