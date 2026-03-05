@@ -737,6 +737,77 @@ textarea.inp{resize:none;height:72px;line-height:1.5;}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .section-hdr-title{font-size:16px;font-weight:700;color:var(--t1);}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(124,108,255,.3);border-radius:var(--rpill);}
+
+/* ════════════════════════════════════════
+   ██  DAY EDIT MODAL
+════════════════════════════════════════ */
+.day-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.8);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  z-index:600;
+  display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.day-modal-overlay.open{opacity:1;pointer-events:all;}
+.day-modal-sheet{
+  background:linear-gradient(145deg,var(--ink2),var(--ink3));
+  border:1px solid var(--rim2);
+  border-radius:28px 28px 0 0;
+  padding:20px 20px calc(20px + var(--safe-b));
+  width:100%;max-width:430px;
+  transform:translateY(100%);
+  transition:transform .4s cubic-bezier(.34,1.2,.64,1);
+  max-height:85vh;overflow-y:auto;
+}
+.day-modal-overlay.open .day-modal-sheet{transform:translateY(0);}
+.day-modal-handle{width:36px;height:4px;background:var(--rim2);border-radius:var(--rpill);margin:0 auto 16px;}
+.day-modal-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.3px;}
+.day-modal-sub{font-size:12px;color:var(--t3);margin-bottom:18px;}
+.day-workout-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;background:var(--glass);
+  border:1px solid var(--rim);border-radius:var(--r16);
+  margin-bottom:8px;
+}
+.dwi-ico{font-size:22px;flex-shrink:0;}
+.dwi-body{flex:1;min-width:0;}
+.dwi-name{font-size:14px;font-weight:600;color:var(--t1);}
+.dwi-meta{font-size:11px;color:var(--t3);margin-top:2px;}
+.dwi-xp{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:var(--v2);flex-shrink:0;}
+.dwi-del{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);
+  color:var(--rose2);cursor:pointer;display:flex;align-items:center;
+  justify-content:center;font-size:13px;transition:all .2s;
+}
+.day-add-section{
+  background:rgba(124,108,255,.06);border:1px dashed rgba(124,108,255,.2);
+  border-radius:var(--r16);padding:16px;margin-top:12px;
+}
+.day-add-title{font-size:12px;font-weight:700;color:var(--v3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;}
+.day-type-row{display:flex;gap:8px;margin-bottom:12px;}
+.day-type-btn{
+  flex:1;padding:10px 6px;text-align:center;
+  background:var(--glass);border:1.5px solid var(--rim);
+  border-radius:var(--r12);cursor:pointer;transition:all .2s;
+}
+.day-type-btn.sel-yoga{border-color:#f472b6;background:rgba(244,114,182,.1);}
+.day-type-btn.sel-walk{border-color:var(--emerald);background:rgba(16,185,129,.1);}
+.day-type-btn.sel-home{border-color:var(--orange);background:rgba(249,115,22,.1);}
+.day-type-ico{font-size:20px;display:block;margin-bottom:3px;}
+.day-type-lbl{font-size:10px;font-weight:600;color:var(--t2);}
+.day-dur-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.day-dur-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--glass2);border:1px solid var(--rim);
+  color:var(--t1);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.day-dur-display{flex:1;text-align:center;font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:#fff;}
+.day-dur-unit{font-size:12px;color:var(--t3);font-family:'Outfit',sans-serif;}
+.cal-day.clickable{cursor:pointer;}
+.cal-day.clickable:active{transform:scale(.9);opacity:.8;}
 </style>
 </head>
 <body>
@@ -1795,7 +1866,8 @@ function renderCal(){
     // Build colored dots for each activity type
     const uniqueTypes=[...new Set(types)];
     const dotsHtml=uniqueTypes.length>0?`<div class="cal-dots">${uniqueTypes.map(t=>`<div class="cal-dot ${t}"></div>`).join('')}</div>`:'';
-    html+=`<div class="${cls}">${d}${dotsHtml}</div>`;
+    const clickable=!isFuture?` clickable" onclick="openDayModal('${ds}',false)`:'"';
+    html+=`<div class="${cls}${clickable}>${d}${dotsHtml}</div>`;
   }
   document.getElementById('calDays').innerHTML=html;
   // Month stats
@@ -1880,6 +1952,118 @@ function pad(n){return n<10?'0'+n:String(n);}
 function dateFromStr(s){const[dd,mm,yy]=s.split('.');return new Date(parseInt(yy),parseInt(mm)-1,parseInt(dd));}
 
 /* ═══════════════════════════════════════
+   DAY EDIT MODAL
+═══════════════════════════════════════ */
+let editingDate_ = null;
+let dayWT_ = null;
+let dayDur_ = 30;
+
+function openDayModal(dateStr, isFuture) {
+  if(isFuture) return;
+  editingDate_ = dateStr;
+  dayWT_ = null;
+  dayDur_ = 30;
+  document.getElementById('dayDurVal').textContent = 30;
+  document.getElementById('dayNotes').value = '';
+  ['yoga','walk','home'].forEach(t => document.getElementById('dyt-'+t).className = 'day-type-btn');
+  const [dd, mm, yy] = dateStr.split('.');
+  const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('dayModalTitle').textContent = `📅 ${parseInt(dd)} ${months[parseInt(mm)-1]}`;
+  renderDayWorkouts(dateStr);
+  document.getElementById('dayModal').classList.add('open');
+}
+
+function closeDayModal(e) {
+  if(e && e.target !== document.getElementById('dayModal')) return;
+  document.getElementById('dayModal').classList.remove('open');
+  editingDate_ = null;
+}
+
+function renderDayWorkouts(dateStr) {
+  const workouts = S.history.filter(h => h.date === dateStr);
+  const list = document.getElementById('dayWorkoutsList');
+  document.getElementById('dayModalSub').textContent = workouts.length > 0
+    ? workouts.length + ' тренировок за этот день'
+    : 'Нет тренировок за этот день';
+  if(!workouts.length) { list.innerHTML = ''; return; }
+  list.innerHTML = workouts.map(h => {
+    const realIdx = S.history.indexOf(h);
+    let meta = h.dur + ' мин';
+    if(h.type==='walk'&&h.walkData&&h.walkData.km) meta += ' · ' + h.walkData.km + ' км';
+    if(h.type==='home'&&h.exercises&&h.exercises.length) meta += ' · ' + h.exercises.filter(e=>e.name).length + ' упр.';
+    return '<div class="day-workout-item">'
+      + '<span class="dwi-ico">'+WICO[h.type]+'</span>'
+      + '<div class="dwi-body">'
+      + '<div class="dwi-name">'+WNAME[h.type]+'</div>'
+      + '<div class="dwi-meta">'+meta+(h.notes?' · '+h.notes.substring(0,25):'')+'</div>'
+      + '</div>'
+      + '<span class="dwi-xp">+'+h.xp+' XP</span>'
+      + '<div class="dwi-del" onclick="deleteDayWorkout('+realIdx+')">✕</div>'
+      + '</div>';
+  }).join('');
+}
+
+function deleteDayWorkout(idx) {
+  const h = S.history[idx];
+  if(!h) return;
+  S[h.type] = Math.max(0, (S[h.type]||0) - 1);
+  S.total = Math.max(0, S.total - 1);
+  S.xp = Math.max(0, S.xp - h.xp);
+  S.history.splice(idx, 1);
+  checkAchs(); save(); renderHome();
+  if(editingDate_) renderDayWorkouts(editingDate_);
+  renderCal();
+}
+
+function selDayType(t) {
+  dayWT_ = t;
+  ['yoga','walk','home'].forEach(x => document.getElementById('dyt-'+x).className = 'day-type-btn');
+  document.getElementById('dyt-'+t).classList.add('sel-'+t);
+}
+
+function changeDayDur(delta) {
+  dayDur_ = Math.max(5, Math.min(180, dayDur_ + delta));
+  document.getElementById('dayDurVal').textContent = dayDur_;
+}
+
+function addWorkoutForDay() {
+  if(!dayWT_) {
+    document.querySelector('.day-type-row').style.animation = 'shake .4s';
+    setTimeout(() => document.querySelector('.day-type-row').style.animation = '', 400);
+    return;
+  }
+  let xp;
+  if(dayWT_==='walk') xp = Math.max(20, Math.round(dayDur_ * 1.2));
+  else if(dayWT_==='yoga') xp = Math.round(dayDur_ * 1.5 + 10);
+  else xp = Math.max(25, Math.round(dayDur_ * 1.0));
+
+  const notes = document.getElementById('dayNotes').value.trim();
+  const entry = {
+    type: dayWT_, intensity: 'auto', xp, dur: dayDur_,
+    notes, date: editingDate_, isPR: false,
+    exercises: [], walkData: {}, yogaData: {}
+  };
+  S.history.unshift(entry);
+  S.history.sort((a, b) => {
+    const toMs = s => { const[d,m,y]=s.split('.');return new Date(parseInt(y),parseInt(m)-1,parseInt(d)).getTime(); };
+    return toMs(b.date) - toMs(a.date);
+  });
+  if(S.history.length > 200) S.history.pop();
+  S.total++;
+  S[dayWT_]++;
+  addXP(xp);
+  checkAchs(); save();
+  dayWT_ = null;
+  dayDur_ = 30;
+  document.getElementById('dayDurVal').textContent = 30;
+  document.getElementById('dayNotes').value = '';
+  ['yoga','walk','home'].forEach(t => document.getElementById('dyt-'+t).className = 'day-type-btn');
+  renderDayWorkouts(editingDate_);
+  renderHome();
+  renderCal();
+}
+
+/* ═══════════════════════════════════════
    INIT
 ═══════════════════════════════════════ */
 // Init: load data then render
@@ -1889,5 +2073,38 @@ function dateFromStr(s){const[dd,mm,yy]=s.split('.');return new Date(parseInt(yy
   checkAchs();
 })();
 </script>
+
+<!-- ═══ DAY EDIT MODAL ═══ -->
+<div class="day-modal-overlay" id="dayModal" onclick="closeDayModal(event)">
+  <div class="day-modal-sheet" id="dayModalSheet">
+    <div class="day-modal-handle"></div>
+    <div class="day-modal-title" id="dayModalTitle">📅 Дата</div>
+    <div class="day-modal-sub" id="dayModalSub">Тренировки за этот день</div>
+    <div id="dayWorkoutsList"></div>
+    <div class="day-add-section">
+      <div class="day-add-title">+ Добавить тренировку</div>
+      <div class="day-type-row">
+        <div class="day-type-btn" id="dyt-yoga" onclick="selDayType('yoga')">
+          <span class="day-type-ico">🧘</span><span class="day-type-lbl">Йога</span>
+        </div>
+        <div class="day-type-btn" id="dyt-walk" onclick="selDayType('walk')">
+          <span class="day-type-ico">🚶</span><span class="day-type-lbl">Дорожка</span>
+        </div>
+        <div class="day-type-btn" id="dyt-home" onclick="selDayType('home')">
+          <span class="day-type-ico">🏠</span><span class="day-type-lbl">Дома</span>
+        </div>
+      </div>
+      <div class="label" style="margin-bottom:8px;">Длительность (мин)</div>
+      <div class="day-dur-row">
+        <div class="day-dur-btn" onclick="changeDayDur(-5)">−</div>
+        <div class="day-dur-display"><span id="dayDurVal">30</span> <span class="day-dur-unit">мин</span></div>
+        <div class="day-dur-btn" onclick="changeDayDur(5)">+</div>
+      </div>
+      <textarea class="inp" id="dayNotes" placeholder="Заметки..." style="margin-bottom:12px;height:60px;"></textarea>
+      <button class="btn-primary" onclick="addWorkoutForDay()">Добавить за этот день</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
