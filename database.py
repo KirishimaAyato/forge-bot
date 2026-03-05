@@ -78,7 +78,7 @@ class Database:
                     FOREIGN KEY (user_id) REFERENCES users(user_id)
                 )
             """)
-            # Migration: add body_log column if upgrading from older version
+            # Migration: add body_log if upgrading from older DB
             try:
                 await db.execute("ALTER TABLE users ADD COLUMN body_log TEXT DEFAULT '[]'")
             except Exception:
