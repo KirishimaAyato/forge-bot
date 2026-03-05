@@ -2630,14 +2630,7 @@ function checkWaterWarning(total) {
   }
   await load();
   recalcStreak(); // fix streak from history on every load
-  // Seed initial body data if empty
-  if(!S.bodyLog || S.bodyLog.length===0){
-    S.bodyLog=[
-      {date:'01.02.2026',weight:82.8,fat:21,note:'Начало'},
-      {date:'03.03.2026',weight:79.8,fat:20.4,note:'Текущий'}
-    ];
-    save();
-  }
+  // bodyLog is loaded from server or localStorage - no seeding
   renderHome();
   checkAchs();
 })();
